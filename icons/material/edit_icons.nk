@@ -1,0 +1,177 @@
+#! C:/Program Files/Nuke13.1v5/nuke-13.1.5.dll -nx
+version 13.1 v5
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="-6" w="1920" h="1025" maximized="1" screen="0">
+        <splitter orientation="1">
+            <split size="639"/>
+            <dock id="" activePageId="DAG.1" focus="true">
+                <page id="DAG.1"/>
+                <page id="DopeSheet.1"/>
+            </dock>
+            <split size="1277"/>
+            <dock id="" activePageId="uk.co.thefoundry.scripteditor.1">
+                <page id="Curve Editor.1"/>
+                <page id="uk.co.thefoundry.scripteditor.1"/>
+                <page id="Viewer.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name "D:/Vladislav Parfentev/YandexDisk/synchronization/.nuke/Python/HotkeyManager/icons/material/edit_icons.nk"
+ last_frame 1
+ format "512 512 0 0 512 512 1 square_512"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ monitorOutLUT rec709
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
+}
+Read {
+ inputs 0
+ file_type png
+ file C:/Users/user/.nuke/Python/HotkeyManager/icons/material/nuke_studio_colors.png
+ format "280 206 0 0 280 206 1 "
+ origset true
+ name Read3
+ label "Last: \[value last]"
+ xpos -281
+ ypos -283
+}
+Read {
+ inputs 0
+ file_type png
+ file C:/Users/user/.nuke/Python/HotkeyManager/icons/material/hamburger.png
+ format "512 512 0 0 512 512 1 square_512"
+ origset true
+ version 1
+ name Read2
+ label "Last: \[value last]"
+ xpos 256
+ ypos -261
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.1412632316 0.2581826448 0.168269217 1}
+ name Constant1
+ xpos 110
+ ypos -254
+}
+set N12d5ec00 [stack 0]
+Copy {
+ inputs 2
+ from0 rgba.alpha
+ to0 rgba.alpha
+ name Copy2
+ xpos 256
+ ypos -73
+}
+Premult {
+ name Premult2
+ xpos 256
+ ypos -37
+}
+Transform {
+ scale 0.65
+ center {512 256}
+ name Transform1
+ label "Pivot: right"
+ xpos 256
+ ypos -13
+}
+set C3d69cc00 [stack 0]
+Crop {
+ box {0 0 {format.w} {format.h}}
+ reformat true
+ crop false
+ name Crop1
+ xpos 256
+ ypos 57
+}
+Write {
+ channels rgba
+ file C:/Users/user/.nuke/Python/HotkeyManager/icons/menu_icon.png
+ file_type png
+ first {{"\[exists input] == 1 ? \[value first_frame] : 0"}}
+ last {{"\[exists input] == 1 ? \[value last_frame] : 0"}}
+ use_limit true
+ checkHashOnRead false
+ version 6
+ beforeRender "\nwrite = nuke.thisNode()\n# set crop if not set\ninputs_in = write.dependencies()\nif len(inputs_in) > 0:\n    if inputs_in\[0].Class() != 'Crop':\n        if write.ypos()-inputs_in\[0].ypos() < 60:\n            write.setXpos(write.xpos())\n            write.setYpos(write.ypos() + 50)\n        crop = nuke.nodes.Crop()\n        crop\['reformat'].setValue(True)\n        crop\['crop'].setValue(False)\n        crop\['box'].setExpression('format.w', 2)\n        crop\['box'].setExpression('format.h', 3)\n        write.setInput(0, crop)\n        crop.setInput(0, inputs_in\[0])\n        crop.setXpos(write.xpos())\n        crop.setYpos(write.ypos() - 27)\n"
+ name Write2
+ label "\[value first] - \[value last]"
+ xpos 256
+ ypos 81
+}
+Read {
+ inputs 0
+ file_type png
+ file C:/Users/user/.nuke/Python/HotkeyManager/icons/material/add.png
+ format "512 512 0 0 512 512 1 square_512"
+ origset true
+ name Read1
+ label "Last: \[value last]"
+ xpos -40
+ ypos -262
+}
+push $N12d5ec00
+Copy {
+ inputs 2
+ from0 rgba.alpha
+ to0 rgba.alpha
+ name Copy1
+ xpos -40
+ ypos -77
+}
+Premult {
+ name Premult1
+ xpos -40
+ ypos -41
+}
+clone $C3d69cc00 {
+ xpos -40
+ ypos -17
+ selected false
+}
+Crop {
+ box {0 0 {format.w} {format.h}}
+ reformat true
+ crop false
+ name Crop2
+ xpos -40
+ ypos 53
+}
+set N12d86c00 [stack 0]
+Viewer {
+ frame_range 1-1
+ colour_sample_bbox {-0.3642857075 -0.25 -0.3571428657 -0.2428571433}
+ name Viewer1
+ xpos -154
+ ypos -364
+ hide_input true
+}
+push $N12d86c00
+Write {
+ channels rgba
+ file C:/Users/user/.nuke/Python/HotkeyManager/icons/create_icon.png
+ file_type png
+ first {{"\[exists input] == 1 ? \[value first_frame] : 0"}}
+ last {{"\[exists input] == 1 ? \[value last_frame] : 0"}}
+ use_limit true
+ checkHashOnRead false
+ version 6
+ beforeRender "\nwrite = nuke.thisNode()\n# set crop if not set\ninputs_in = write.dependencies()\nif len(inputs_in) > 0:\n    if inputs_in\[0].Class() != 'Crop':\n        if write.ypos()-inputs_in\[0].ypos() < 60:\n            write.setXpos(write.xpos())\n            write.setYpos(write.ypos() + 50)\n        crop = nuke.nodes.Crop()\n        crop\['reformat'].setValue(True)\n        crop\['crop'].setValue(False)\n        crop\['box'].setExpression('format.w', 2)\n        crop\['box'].setExpression('format.h', 3)\n        write.setInput(0, crop)\n        crop.setInput(0, inputs_in\[0])\n        crop.setXpos(write.xpos())\n        crop.setYpos(write.ypos() - 27)\n"
+ name Write1
+ label "\[value first] - \[value last]"
+ xpos -40
+ ypos 77
+}
