@@ -2,7 +2,7 @@ import nuke
 import os
 import re
 
-from PySide2.QtWidgets import QWidget, QCompleter, QApplication
+from PySide2.QtWidgets import QWidget, QCompleter
 from PySide2.QtCore import QSize
 if nuke.NUKE_VERSION_MAJOR == 12:
     from PySide2.QtCore import Qt
