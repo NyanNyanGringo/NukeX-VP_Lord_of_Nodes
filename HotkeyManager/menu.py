@@ -10,6 +10,7 @@ import helper_hotkey_manager as helper
 import hotkey_manager_settings as settings
 
 
+
 # Create menu and menu items with actions
 menu = nuke.menu("Nuke").addMenu(settings.tab_name_in_nuke_menu)
 
