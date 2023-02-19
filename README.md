@@ -1,8 +1,6 @@
-###### Last update: v003 (2023_02_13)
-
 # HOTKEY MANAGER FOR NUKEX:
 
-[YouTube](https://www.youtube.com/)  
+[YouTube](https://www.youtube.com/watch?v=ajO1VFTUTo0&t=2s)  
 [Nukepedia](http://www.nukepedia.com/)
 
 This app will help you to create hotkeys for nodes in NodeGraph
@@ -14,7 +12,8 @@ It has next advantages:
 rewritten to make this functionality possible;
 4. You can create any hotkeys bundles of nodes you want with any
 knobs you want;
-5. You can choose for which node to ShowPanel (or not show at all?)
+5. You can choose for which node to ShowPanel (or not show at all?);
+6. You can modify any knobs inside nodes.
 
 This system works in Nuke ToolSets engine - it means that every time
 you will call hotkey it will create toolset. But for user experience it
