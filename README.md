@@ -34,3 +34,5 @@ Hope you enjoy!
 3) Paste config files* to "/.nuke/HotkeyManager"
 
 *"ToolSets", "hotkey_manager_config.json"
+
+[alt text](http://www.nukepedia.com/images/users/NyanNyanGringo/github_logo.png)
