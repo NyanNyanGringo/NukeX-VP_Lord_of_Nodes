@@ -1,6 +1,6 @@
 # HOTKEY MANAGER FOR NUKEX:
 
-[YouTube](https://www.youtube.com/)  
+[YouTube](https://www.youtube.com/watch?v=zZLdHVLjIM0)  
 [Nukepedia](http://www.nukepedia.com/python/nodegraph/hotkey-manager)
 
 This app will help you to create hotkeys for nodes in NodeGraph
