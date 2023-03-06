@@ -1,4 +1,5 @@
 """
+# TODO: Gizmo that not Gizmo support (like Grain2, IBKColor etc.) +
 # TODO: Do not return in NodeGraph Menu if press ctrl+z after it's closing
 # TODO: Bug with C++ doesn't exists when open create hotkey menu
 """

@@ -403,7 +403,7 @@ def check_editor_in_nodegraph():
 
 
 def check_node_is_gizmo_or_contains_gizmo(node):
-    if type(node) == nuke.Gizmo:
+    if type(node) == nuke.Gizmo and node.Class() == "Gizmo":
         return True
     elif type(node) == nuke.Group:
         with node:
