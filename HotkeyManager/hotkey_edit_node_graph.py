@@ -432,5 +432,7 @@ def start():
         else:
             hide_editor_in_nodegraph()
             helper.set_mouse_tracking_in_nodegraph(True)
+            # Remove Undo we can't call Edit NodeGraph menu with ctrl+z
+            nuke.Undo().undoTruncate()
     else:
         helper.find_edit_node_graph_action().setChecked(False)
