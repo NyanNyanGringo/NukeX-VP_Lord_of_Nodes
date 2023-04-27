@@ -21,7 +21,7 @@ Hope you enjoy!
 2) In the !start! of file "/.nuke/init.py" add next code:
 
 > import nuke  
-> nuke.addPluginPath("./HotkeyManager")
+> nuke.pluginAddPath("./HotkeyManager")
 
 # HOW TO UPDATE:
 1) Copy config files* from "/.nuke/HotkeyManager"
