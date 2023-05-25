@@ -1,0 +1,21 @@
+set cut_paste_input [stack 0]
+push $cut_paste_input
+CornerPin2D {
+to1 {0 0}
+to2 {{input.width} 0}
+to3 {{input.width} {input.height}}
+to4 {0 {input.height}}
+invert false
+from1 {0 0}
+from2 {{input.width} 0}
+from3 {{input.width} {input.height}}
+from4 {0 {input.height}}
+name CornerPin2D7
+knobChanged "\ndef copyWithClear(node=None):\n    for name, knob in node.knobs().items():\n        try:\n            if knob.isAnimated():\n                knob.clearAnimated()\n        except AttributeError:\n            pass\n\nnode = nuke.thisNode()\nknob = nuke.thisKnob()\n\nif knob.name() == \"indicators\":\n    copyWithClear(node)\n    node.knob(\"knobChanged\").setValue(\"\")\n\n"
+selected true
+xpos 1108
+ypos 539
+addUserKnob {20 User}
+addUserKnob {1 HK_input_node}
+addUserKnob {1 HK_output_node}
+}

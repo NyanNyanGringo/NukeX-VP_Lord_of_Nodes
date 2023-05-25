@@ -1,0 +1,12 @@
+set cut_paste_input [stack 0]
+push $cut_paste_input
+Crop {
+box {0 0 {format.w} {format.h}}
+name Crop6
+selected true
+xpos 2146
+ypos 6707
+addUserKnob {20 User}
+addUserKnob {1 HK_input_node}
+addUserKnob {1 HK_output_node}
+}

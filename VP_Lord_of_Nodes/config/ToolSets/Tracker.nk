@@ -1,0 +1,12 @@
+set cut_paste_input [stack 0]
+push $cut_paste_input
+Tracker4 {
+center {1024 429}
+name Tracker1
+selected true
+xpos -288
+ypos -401
+addUserKnob {20 User}
+addUserKnob {1 HK_input_node}
+addUserKnob {1 HK_output_node}
+}

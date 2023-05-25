@@ -1,0 +1,359 @@
+set cut_paste_input [stack 0]
+push $cut_paste_input
+Dot {
+ name Dot4
+ selected true
+ xpos 3530
+ ypos 6407
+ addUserKnob {20 User}
+ addUserKnob {1 HK_input_node}
+}
+set N97c44800 [stack 0]
+Group {
+ name IBK_ColorPlus2
+ tile_color 0x9900ff
+ selected true
+ xpos 3388
+ ypos 6404
+ addUserKnob {20 User}
+ addUserKnob {41 screen_type l "screen type" T IBKColourV3.screen_type}
+ addUserKnob {7 size R 1 10}
+ size 1
+ addUserKnob {41 off l darks T IBKColourV3.off}
+ addUserKnob {41 mult l lights T IBKColourV3.mult}
+ addUserKnob {26 ""}
+ addUserKnob {41 erode T IBKColourV3.erode}
+ addUserKnob {1 HK_other_node}
+}
+ BackdropNode {
+  inputs 0
+  name BackdropNode1
+  tile_color 0x8e8e3800
+  label "get alpha from IBK_COlor"
+  note_font_size 42
+  xpos -890
+  ypos -1211
+  bdwidth 535
+  bdheight 236
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode2
+  tile_color 0x388e8e00
+  label "when size 10 -> fill black space"
+  note_font_size 42
+  xpos -624
+  ypos -156
+  bdwidth 631
+  bdheight 213
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode3
+  tile_color 0x7171c600
+  label "size from 1 to 10"
+  note_font_size 42
+  xpos -624
+  ypos -890
+  bdwidth 346
+  bdheight 691
+ }
+ Input {
+  inputs 0
+  name AlphaMask
+  xpos -1010
+  ypos -1302
+  number 1
+ }
+ Grade {
+  channels alpha
+  blackpoint 0.1
+  whitepoint 0.1
+  white_clamp true
+  name Grade
+  xpos -1010
+  ypos -1140
+ }
+ Dot {
+  name Dot5
+  xpos -976
+  ypos -1056
+ }
+ Input {
+  inputs 0
+  name Source
+  xpos -880
+  ypos -1304
+ }
+ Dot {
+  name Dot9
+  xpos -846
+  ypos -1128
+ }
+set N97c6c800 [stack 0]
+ IBKColourV3 {
+  name IBKColourV3
+  screen_type green
+ }
+push $N97c6c800
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy
+  xpos -880
+  ypos -1055
+ }
+ Switch {
+  inputs 2
+  which {{"parent.inputs >= 2"}}
+  name Switch1
+  label "\[value which]"
+  xpos -880
+  ypos -1009
+ }
+ Premult {
+  name Premult1
+  xpos -880
+  ypos -953
+ }
+ Dot {
+  name Dot1
+  xpos -846
+  ypos -920
+ }
+set N97d2b000 [stack 0]
+ Dot {
+  name Dot2
+  xpos -580
+  ypos -920
+ }
+ EdgeBlur {
+  size 2
+  name EdgeBlur2
+  xpos -614
+  ypos -810
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression2
+  xpos -614
+  ypos -774
+ }
+ EdgeBlur {
+  size 2
+  name EdgeBlur1
+  xpos -614
+  ypos -750
+  disable {{!(parent.size>=2)}}
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression1
+  xpos -614
+  ypos -714
+  disable {{!(parent.size>=2)}}
+ }
+ EdgeBlur {
+  size 2
+  name EdgeBlur3
+  xpos -614
+  ypos -690
+  disable {{!(parent.size>=3)}}
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression3
+  xpos -614
+  ypos -654
+  disable {{!(parent.size>=3)}}
+ }
+ EdgeBlur {
+  size 4
+  name EdgeBlur4
+  xpos -614
+  ypos -630
+  disable {{!(parent.size>=4)}}
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression4
+  xpos -614
+  ypos -594
+  disable {{!(parent.size>=4)}}
+ }
+ EdgeBlur {
+  size 8
+  name EdgeBlur5
+  xpos -614
+  ypos -570
+  disable {{!(parent.size>=5)}}
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression5
+  xpos -614
+  ypos -534
+  disable {{!(parent.size>=5)}}
+ }
+ EdgeBlur {
+  size 16
+  name EdgeBlur6
+  xpos -614
+  ypos -510
+  disable {{!(parent.size>=6)}}
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression6
+  xpos -614
+  ypos -474
+  disable {{!(parent.size>=6)}}
+ }
+ EdgeBlur {
+  size 32
+  name EdgeBlur7
+  xpos -614
+  ypos -450
+  disable {{!(parent.size>=7)}}
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression7
+  xpos -614
+  ypos -414
+  disable {{!(parent.size>=7)}}
+ }
+ EdgeBlur {
+  size 64
+  name EdgeBlur8
+  xpos -614
+  ypos -390
+  disable {{!(parent.size>=8)}}
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression8
+  xpos -614
+  ypos -354
+  disable {{!(parent.size>=8)}}
+ }
+ EdgeBlur {
+  size 128
+  name EdgeBlur9
+  xpos -614
+  ypos -330
+  disable {{!(parent.size>=9)}}
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression9
+  xpos -614
+  ypos -294
+  disable {{!(parent.size>=9)}}
+ }
+ EdgeBlur {
+  size 256
+  name EdgeBlur10
+  xpos -614
+  ypos -270
+  disable {{!(parent.size>=10)}}
+ }
+ Expression {
+  expr0 r>0?r/a:0
+  expr1 g>0?g/a:0
+  expr2 b>0?b/a:0
+  expr3 a>0?a/a:0
+  name Expression10
+  xpos -614
+  ypos -234
+  disable {{!(parent.size>=10)}}
+ }
+ Dot {
+  name Dot4
+  xpos -580
+  ypos -67
+ }
+set N97dde800 [stack 0]
+ Blur {
+  size 500
+  name Blur2
+  xpos -481
+  ypos -76
+ }
+ Unpremult {
+  name Unpremult1
+  xpos -481
+  ypos -31
+ }
+push $N97dde800
+ Merge2 {
+  inputs 2
+  operation under
+  name Merge2
+  xpos -614
+  ypos 16
+  disable {{"!(parent.size >= 10)"}}
+ }
+ Dot {
+  name Dot3
+  xpos -580
+  ypos 83
+ }
+push $N97d2b000
+ EdgeBlur {
+  name EdgeBlur11
+  xpos -880
+  ypos -824
+ }
+ Merge2 {
+  inputs 2
+  operation under
+  output {rgba.red rgba.green rgba.blue -rgba.alpha}
+  name Merge1
+  xpos -880
+  ypos 80
+ }
+ Output {
+  name Output1
+  xpos -880
+  ypos 176
+ }
+end_group
+push $N97c44800
+IBKGizmoV3 {
+ inputs 2
+ name IBKGizmoV3_3
+ xpos 3496
+ ypos 6484
+ st C-green
+ addUserKnob {20 User}
+ addUserKnob {1 HK_output_node}
+}

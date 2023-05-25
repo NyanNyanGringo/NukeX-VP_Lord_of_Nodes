@@ -1,4 +1,4 @@
-# HOTKEY MANAGER FOR NUKEX:
+# LORD OF NODES FOR NUKEX:
 
 [YouTube](https://www.youtube.com/watch?v=zZLdHVLjIM0)  
 [Nukepedia](http://www.nukepedia.com/python/nodegraph/hotkey-manager)
@@ -17,15 +17,12 @@ It has next advantages:
 Hope you enjoy!
 
 # FIRST INSTALL:
-1) Move "HotkeyManager" folder to "/.nuke/HotkeyManager"
+1) Move "VP_Lord_of_Nodes" folder to "/.nuke/VP_Lord_of_Nodes"
 2) In the !start! of file "/.nuke/init.py" add next code:
 
 > import nuke  
-> nuke.pluginAddPath("./HotkeyManager")
+> nuke.pluginAddPath("./VP_Lord_of_Nodes")
 
 # HOW TO UPDATE:
-1) Copy config files* from "/.nuke/HotkeyManager"
-2) Move !new! "HotkeyManager" folder to "/.nuke/HotkeyManager"
-3) Paste config files* to "/.nuke/HotkeyManager"
-
-*"ToolSets", "hotkey_manager_config.json"
+1) Delete folder "lord_of_nodes" ("/.nuke/VP_Lord_of_Nodes/lord_of_nodes")
+2) Move !new! "lord_of_nodes" folder to "/.nuke/VP_Lord_of_Nodes/lord_of_nodes"

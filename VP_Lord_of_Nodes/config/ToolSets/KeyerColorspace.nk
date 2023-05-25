@@ -1,0 +1,21 @@
+set cut_paste_input [stack 0]
+push $cut_paste_input
+Colorspace {
+ colorspace_out CIE-Lab
+ name Colorspace2
+ label "\[value colorspace_in] >> \[value colorspace_out]"
+ selected true
+ xpos 964
+ ypos 1161
+ addUserKnob {20 User}
+ addUserKnob {1 HK_input_node}
+}
+Keyer {
+ operation "luminance key"
+ name Keyer5
+ selected true
+ xpos 964
+ ypos 1197
+ addUserKnob {20 User}
+ addUserKnob {1 HK_output_node}
+}

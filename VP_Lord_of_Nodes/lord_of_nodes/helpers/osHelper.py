@@ -1,4 +1,5 @@
 import os
+import nukescripts
 
 
 def get_plugin_path():
@@ -34,3 +35,7 @@ def get_toolset_path(toolset_name=None):
 
 def get_icon_path():
     return os.path.join(get_application_path(), "icons").replace("\\", "/")
+
+
+def get_nuke_preset_filepath():
+    return os.path.join(nukescripts.nodepresets.getNukeUserFolder(), "NodePresets", "user_presets.py").replace("\\", "/")

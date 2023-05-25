@@ -1,0 +1,11 @@
+set cut_paste_input [stack 0]
+push $cut_paste_input
+Merge2 {
+ name Merge1
+ selected true
+ xpos -211
+ ypos -431
+ addUserKnob {20 User}
+ addUserKnob {1 HK_input_node}
+ addUserKnob {1 HK_output_node}
+}

@@ -1,5 +1,8 @@
 """
 # TODO: Bug with C++ doesn't exists when open create hotkey menu
+# TODO: Funtion to delete from .nuke lines with custom presets
+
+
 """
 
 
@@ -9,6 +12,7 @@ import os
 from lord_of_nodes import hotkey_creator
 from lord_of_nodes import hotkey_edit_menu
 from lord_of_nodes import hotkey_edit_node_graph
+from lord_of_nodes import knob_default_creator
 
 from lord_of_nodes.helpers import osHelper, configHelper, toolsetsHelper, hotkeysHelper, nukeHelper, qtHelper
 import lord_of_nodes.hotkey_manager_settings as settings
@@ -24,6 +28,9 @@ edit = menu.addCommand(settings.edit_menu_menu_name,
 edit_node_graph = menu.addCommand(settings.edit_node_graph_menu_name,
                                   hotkey_edit_node_graph.start)
 edit_node_graph.action().setCheckable(True)
+menu.addSeparator()
+set_knobs = menu.addCommand(settings.set_knob_default_menu_name, knob_default_creator.add_knob_default_for_selected_node)
+remove_knobs = menu.addCommand(settings.remove_knob_default_menu_name, knob_default_creator.remove_knob_default_for_selected_node)
 
 
 # Set icons
@@ -32,7 +39,8 @@ edit.setIcon(os.path.join(osHelper.get_icon_path(), "menu_icon.png"))
 
 
 # Create config if it is not exists
-configHelper.check_config_exists_else_create_it()
+configHelper.check_config_exists_else_create_it(conf_file_path=configHelper.get_user_config_path())
+configHelper.check_config_exists_else_create_it(conf_file_path=configHelper.get_presets_config_path())
 
 
 # Exclude our custom toolset path from main ToolSets
@@ -57,3 +65,7 @@ def set_checked_edit_node_graph_command_if_edit_opened():
 
 
 nuke.addOnScriptLoad(set_checked_edit_node_graph_command_if_edit_opened)
+
+
+# make knob default
+nuke.addOnUserCreate(knob_default_creator.apply_preset_on_user_create)

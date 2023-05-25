@@ -20,6 +20,15 @@ def get_user_config_path():
     return os.path.join(osHelper.get_config_path(), "hotkey_manager_config.json").replace("\\", "/")
 
 
+def get_presets_config_path():
+    """
+    Get default user config preset path for knobDefaults
+    :
+    :rtype: str
+    """
+    return os.path.join(osHelper.get_config_path(), "knobs_defaults_config.json").replace("\\", "/")
+
+
 def write_configs(keys, confs, conf_file_path=get_user_config_path()):
     """
     Write values to config-file as key-value

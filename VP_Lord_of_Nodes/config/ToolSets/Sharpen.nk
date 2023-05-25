@@ -1,0 +1,28 @@
+set cut_paste_input [stack 0]
+push $cut_paste_input
+Log2Lin {
+operation lin2log
+name Log2Lin3
+label "\[value operation]"
+selected true
+xpos 452
+ypos 4524
+addUserKnob {20 User}
+addUserKnob {1 HK_input_node}
+}
+Sharpen {
+name Sharpen3
+selected true
+xpos 452
+ypos 4560
+addUserKnob {20 User}
+addUserKnob {1 HK_other_node}
+}
+Log2Lin {
+name Log2Lin4
+selected true
+xpos 452
+ypos 4596
+addUserKnob {20 User}
+addUserKnob {1 HK_output_node}
+}
