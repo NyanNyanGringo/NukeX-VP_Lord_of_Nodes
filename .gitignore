@@ -1,5 +1,5 @@
 .idea
 nukepedia_html
-ToolSets
-hotkey_manager_config.json
+!config/ToolSets
+!config/hotkey_manager_config.json
 README.html
