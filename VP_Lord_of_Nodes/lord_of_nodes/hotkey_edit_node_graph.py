@@ -2,11 +2,11 @@ import nuke
 import nukescripts
 import os
 
-import helper_config
-import helper_hotkey_manager as helper
-import hotkey_manager_settings as settings
+from lord_of_nodes.helpers import toolsetsHelper, stringHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, \
+    qtHelper
+import lord_of_nodes.hotkey_manager_settings as settings
 
-import hotkey_creator
+from lord_of_nodes import hotkey_creator
 
 
 class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
@@ -62,7 +62,7 @@ class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
         self.ui_lineEdit_name.setText(self.get_toolset_name_from_emitter())
 
     def autofill_hotkey_if_emitter(self):
-        hotkey = helper_config.read_config_key(self.get_toolset_name_from_emitter())["hotkey"]
+        hotkey = configHelper.read_config_key(self.get_toolset_name_from_emitter())["hotkey"]
         if "ctrl" in hotkey:
             self.ui_checkBox_ctrl_hotkey.setChecked(True)
         if "shift" in hotkey:
@@ -75,12 +75,12 @@ class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
 
     def start_create_hotkey_if_emitter(self):
         if self.check_before_start_create_hotkey_if_emitter():
-            helper.delete_toolset_by_name(self.get_toolset_name_from_emitter())
+            toolsetsHelper.delete_toolset_by_name(self.get_toolset_name_from_emitter())
             self.set_input_output_show_panel_info_to_nodes()
             self.create_toolset()
-            helper.delete_extra_knobs_from_toolset_nodes(self.selected)
+            nukeHelper.delete_extra_knobs_from_toolset_nodes(self.selected)
             self.write_config_about_toolset()
-            helper.add_hotkey_to_menu_by_toolset_name(self.ui_lineEdit_name.text())
+            hotkeysHelper.add_hotkey_to_menu_by_toolset_name(self.ui_lineEdit_name.text())
             self.rename_nodes_if_edit_opened_in_nodegraph()
             self.close()
             nuke.message(settings.finish_message)
@@ -98,7 +98,7 @@ class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
 
         # Change BackDrop
         backdrop.unlock()
-        backdrop["label"].setValue(helper.get_label_for_backdrop(new_preset_name, new_hotkey))
+        backdrop["label"].setValue(nukeHelper.get_label_for_backdrop(new_preset_name, new_hotkey))
         backdrop["name"].setValue(new_preset_name + settings.backdrop_subname)
         backdrop.lock()
 
@@ -123,15 +123,15 @@ class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
 
     def check_preset_with_same_name_exists_if_emitter(self):
         if not self.get_toolset_name_from_emitter() == self.ui_lineEdit_name.text():
-            if (self.ui_lineEdit_name.text() + ".nk") in os.listdir(helper.get_toolset_path()):
+            if (self.ui_lineEdit_name.text() + ".nk") in os.listdir(osHelper.get_toolset_path()):
                 nuke.message("Preset with name " + self.ui_lineEdit_name.text() + " already exists!")
                 return True
         return False
 
     def check_hotkey_already_exists_if_emitter(self):
-        preset_hotkey = helper_config.read_config_key(self.get_toolset_name_from_emitter())["hotkey"]
-        if os.path.exists(helper_config.get_user_config_path()):
-            for toolset_name, dict_of_values in helper_config.read_config().items():
+        preset_hotkey = configHelper.read_config_key(self.get_toolset_name_from_emitter())["hotkey"]
+        if os.path.exists(configHelper.get_user_config_path()):
+            for toolset_name, dict_of_values in configHelper.read_config().items():
                 if self.get_hotkey() == dict_of_values["hotkey"] and self.get_hotkey() != preset_hotkey:
                     nuke.message("Hotkey " + self.get_hotkey() + " already exist in preset " + toolset_name)
                     return True
@@ -155,18 +155,18 @@ def show_editor_in_nodegraph():
     :return: None
     """
     # Find all toolsets to create
-    toolsets_to_create = helper.get_list_of_toolsets()
+    toolsets_to_create = toolsetsHelper.get_list_of_toolsets()
 
     all_nodes_before_load_toolset = nuke.allNodes()
     for toolset_name in toolsets_to_create:
         try:
-            toolset_nodes = helper.load_and_get_toolset_nodes(toolset_name)
-            helper.find_input_output_show_panel_nodes(toolset_nodes)
+            toolset_nodes = toolsetsHelper.load_and_get_toolset_nodes(toolset_name)
+            nukeHelper.find_input_output_show_panel_nodes(toolset_nodes)
             for node in toolset_nodes:
                 nuke.delete(node)
         except RuntimeError:
             nuke.message("My Lord, can't create " + toolset_name + "!\nPlease delete this hotkey.")
-            helper.find_edit_node_graph_action().setChecked(False)
+            qtHelper.find_edit_node_graph_action().setChecked(False)
             return
 
     # Find start position in NodeGraph for creating toolsets (BackDrops, Node-Buttons etc.).
@@ -184,13 +184,13 @@ def show_editor_in_nodegraph():
     list_of_items = []
     for toolset_name in toolsets_to_create:
         # Get ToolsetNodes
-        toolset_nodes = helper.load_and_get_toolset_nodes(toolset_name)
+        toolset_nodes = toolsetsHelper.load_and_get_toolset_nodes(toolset_name)
 
         # Get and setup BackDrop
         [node.setSelected(True) for node in toolset_nodes]
         backdrop = nukescripts.autoBackdrop()
-        hotkey = helper_config.read_config_key(toolset_name)["hotkey"]
-        backdrop["label"].setValue(helper.get_label_for_backdrop(toolset_name, hotkey))
+        hotkey = configHelper.read_config_key(toolset_name)["hotkey"]
+        backdrop["label"].setValue(nukeHelper.get_label_for_backdrop(toolset_name, hotkey))
         backdrop["tile_color"].setValue(settings.bg_color)
         backdrop["name"].setValue(toolset_name + settings.backdrop_subname)
 
@@ -285,7 +285,7 @@ def show_editor_in_nodegraph():
     # Delete knobs input, output and show_panel in toolset nodes
     for items in list_of_items:
         backdrop, save_node, delete_node, toolset_nodes = get_backdrop_n_buttons_n_toolset_nodes(items)
-        helper.find_input_output_show_panel_nodes(toolset_nodes)
+        nukeHelper.find_input_output_show_panel_nodes(toolset_nodes)
 
     # Set additional settings for BackDrop and Buttons
     for items in list_of_items:
@@ -306,8 +306,8 @@ except:
         save_node.knob("knobChanged").setValue(
             """
 try:
-    import hotkey_edit_node_graph
-    import helper_hotkey_manager as helper
+    from lord_of_nodes import hotkey_edit_node_graph
+    from lord_of_nodes.helpers import qtHelper
     
     this_node = nuke.thisNode()
     this_knob = nuke.thisKnob()
@@ -324,8 +324,8 @@ try:
             [node.setSelected(False) for node in nuke.allNodes()]
             [node.setSelected(True) for node in toolset_nodes]
             
-            if not helper.check_hotkey_manager_creator_is_opened():
-                nuke_main_window = helper.get_nuke_main_window()
+            if not qtHelper.check_hotkey_manager_creator_is_opened():
+                nuke_main_window = qtHelper.get_nuke_main_window()
                 nuke_main_window.setEnabled(False)
                 edit_widget = hotkey_edit_node_graph.HotkeyEditNodeGraphWidget(parent=nuke_main_window, emitter_node=this_node)
                 edit_widget.show()
@@ -336,8 +336,7 @@ except:
         delete_node.knob("knobChanged").setValue(
             """
 try:
-    import helper_hotkey_manager as helper
-    
+    from lord_of_nodes.helpers import toolsetsHelper, qtHelper
     
     this_node = nuke.thisNode()
     this_knob = nuke.thisKnob()
@@ -345,7 +344,7 @@ try:
     if this_knob.name() == "selected" and this_node.isSelected():
         if nuke.ask("Are you sure you want to delete preset?"):
             toolset_name = '_'.join(this_node.name().split("_")[0:-1])
-            helper.delete_toolset_by_name(toolset_name)
+            toolsetsHelper.delete_toolset_by_name(toolset_name)
             backdrop = nuke.toNode(toolset_name + '""" + settings.backdrop_subname + """')
             save_node = nuke.toNode(toolset_name + '""" + settings.save_node_subname + """')
             delete_node = nuke.toNode(toolset_name + '""" + settings.delete_node_subname + """')
@@ -358,8 +357,8 @@ try:
             for node in toolset_nodes + [backdrop, save_node, delete_node]:
                 nuke.delete(node)
                 
-            if not helper.get_list_of_toolsets():
-                edit_node_graph_action = helper.find_edit_node_graph_action()
+            if not toolsetsHelper.get_list_of_toolsets():
+                edit_node_graph_action = qtHelper.find_edit_node_graph_action()
                 edit_node_graph_action.setChecked(False)
         else:
             this_node.setSelected(False)
@@ -410,12 +409,12 @@ def check_before_start():
     Check before start showing all toolsets in NodeGraph
     :return: bool
     """
-    if not helper.check_node_graph_is_visible_and_not_hidden():
+    if not qtHelper.check_node_graph_is_visible_and_not_hidden():
         nuke.message("Please select NodeGraph tab first!")
         return False
-    if not helper.get_list_of_toolsets():
+    if not toolsetsHelper.get_list_of_toolsets():
         nuke.message("No Hotkeys exists!")
-        helper.find_edit_node_graph_action().setChecked(False)
+        qtHelper.find_edit_node_graph_action().setChecked(False)
         return False
     return True
 
@@ -426,13 +425,13 @@ def start():
     :return: None
     """
     if check_before_start():
-        if helper.find_edit_node_graph_action().isChecked():
+        if qtHelper.find_edit_node_graph_action().isChecked():
             show_editor_in_nodegraph()
-            helper.set_mouse_tracking_in_nodegraph(False)
+            qtHelper.set_mouse_tracking_in_nodegraph(False)
         else:
             hide_editor_in_nodegraph()
-            helper.set_mouse_tracking_in_nodegraph(True)
+            qtHelper.set_mouse_tracking_in_nodegraph(True)
             # Remove Undo we can't call Edit NodeGraph menu with ctrl+z
             nuke.Undo().undoTruncate()
     else:
-        helper.find_edit_node_graph_action().setChecked(False)
+        qtHelper.find_edit_node_graph_action().setChecked(False)

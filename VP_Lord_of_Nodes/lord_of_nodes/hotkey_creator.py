@@ -9,11 +9,10 @@ if nuke.NUKE_VERSION_MAJOR == 12:
 elif nuke.NUKE_VERSION_MAJOR >= 13:
     from PySide2.QtGui import Qt
 
-from widgets import creatorWidget
-
-import helper_config
-import helper_hotkey_manager as helper
-import hotkey_manager_settings as settings
+from lord_of_nodes.widgets import creatorWidget
+from lord_of_nodes.helpers import toolsetsHelper, stringHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, \
+    qtHelper
+import lord_of_nodes.hotkey_manager_settings as settings
 
 
 class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
@@ -72,7 +71,7 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         with the same start
         :return: None
         """
-        completer = QCompleter(sorted([file for file in helper.get_list_of_toolsets()]))
+        completer = QCompleter(sorted([file for file in toolsetsHelper.get_list_of_toolsets()]))
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         completer.setFilterMode(Qt.MatchContains)
         self.ui_lineEdit_name.setCompleter(completer)
@@ -159,7 +158,7 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         :return: None
         """
         self.ui_comboBox_names.addItem("")
-        self.ui_comboBox_names.addItems(helper.get_list_of_toolsets())
+        self.ui_comboBox_names.addItems(toolsetsHelper.get_list_of_toolsets())
 
     def autofill_show_panel(self):
         """
@@ -183,7 +182,7 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         :return: None
         """
         find_all_letters_or_number = re.findall(r"\w", self.ui_lineEdit_hotkey.text())
-        find_all_english = [s for s in find_all_letters_or_number if helper.check_symbol_is_english(s)]
+        find_all_english = [s for s in find_all_letters_or_number if stringHelper.check_symbol_is_english(s)]
         if find_all_english:
             self.ui_lineEdit_hotkey.setText(find_all_english[-1].lower())
             return
@@ -195,7 +194,7 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         :return: None
         """
         corrected_text = (re.findall(r"\w", self.ui_lineEdit_name.text()))
-        corrected_text = ''.join([s for s in corrected_text if helper.check_symbol_is_english(s)])
+        corrected_text = ''.join([s for s in corrected_text if stringHelper.check_symbol_is_english(s)])
         if corrected_text:
             self.ui_lineEdit_name.setText(corrected_text)
 
@@ -209,9 +208,9 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         if self.check_before_start_create_hotkey():
             self.set_input_output_show_panel_info_to_nodes()
             self.create_toolset()
-            helper.delete_extra_knobs_from_toolset_nodes(self.selected)
+            nukeHelper.delete_extra_knobs_from_toolset_nodes(self.selected)
             self.write_config_about_toolset()
-            helper.add_hotkey_to_menu_by_toolset_name(self.ui_lineEdit_name.text())
+            hotkeysHelper.add_hotkey_to_menu_by_toolset_name(self.ui_lineEdit_name.text())
             self.close()
             nuke.message(settings.finish_message)
 
@@ -246,10 +245,10 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         [node.setSelected(True) for node in self.selected]
         nuke.createToolset(filename=self.ui_lineEdit_name.text(),
                            overwrite=True,
-                           rootPath=helper.get_current_path())
+                           rootPath=osHelper.get_config_path())
 
         # Delete first three strings in Toolset file, so it won't be connected to version of Nuke
-        toolset_path = os.path.join(helper.get_current_path(), "ToolSets", self.ui_lineEdit_name.text() + ".nk")
+        toolset_path = osHelper.get_toolset_path(toolset_name=self.ui_lineEdit_name.text())
         lines_without_version = []
         with open(toolset_path, "r") as file:
             for index, line in enumerate(file):
@@ -266,7 +265,7 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         Write to config file name of created toolset, and it's hotkey
         :return: None
         """
-        helper_config.write_config(key=self.ui_lineEdit_name.text(),
+        configHelper.write_config(key=self.ui_lineEdit_name.text(),
                                    conf={"hotkey": self.get_hotkey()})
 
     # CHECKERS
@@ -298,7 +297,7 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         return True
 
     def check_preset_with_same_name_exists(self):
-        if (self.ui_lineEdit_name.text() + ".nk") in os.listdir(helper.get_toolset_path()):
+        if (self.ui_lineEdit_name.text() + ".nk") in os.listdir(osHelper.get_toolset_path()):
             nuke.message("Preset with name " + self.ui_lineEdit_name.text() + " already exists!")
             return True
         return False
@@ -308,8 +307,8 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         Check if hotkey from toolsets already exists
         :return: bool
         """
-        if os.path.exists(helper_config.get_user_config_path()):
-            for toolset_name, dict_of_values in helper_config.read_config().items():
+        if os.path.exists(configHelper.get_user_config_path()):
+            for toolset_name, dict_of_values in configHelper.read_config().items():
                 if self.get_hotkey() == dict_of_values["hotkey"]:
                     nuke.message("Hotkey " + self.get_hotkey() + " already exist in preset " + toolset_name)
                     return True
@@ -328,12 +327,12 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         """
         for menu in ("Nodes", "Nuke", "Viewer", "Node Graph"):
             menu = nuke.menu(menu)
-            menu_items = helper.get_items_in_menu(menu)
+            menu_items = qtHelper.get_items_in_menu(menu)
             for menu_item in menu_items:
                 hotkey = menu_item.action().shortcut().toString().replace(" ", "").lower()
                 self_hotkey = self.get_hotkey().replace(" ", "").lower()
                 if hotkey == self_hotkey:
-                    if hotkey.lower() not in helper.get_toolsets_hotkeys_list():
+                    if hotkey.lower() not in toolsetsHelper.get_toolsets_hotkeys_list():
                         if nuke.ask("Hotkey " + hotkey + " already used in " + menu_item.name() + "\n\nReplace?"):
                             return True
                         return False
@@ -406,16 +405,16 @@ def check_before_start():
     if "Viewer" in [node.Class() for node in nuke.selectedNodes()]:
         nuke.message("Viewer can't be in hotkeys!")
         return False
-    if any([helper.check_node_is_gizmo_or_contains_gizmo(node) for node in nuke.selectedNodes()]):
+    if any([nukeHelper.check_node_is_gizmo_or_contains_gizmo(node) for node in nuke.selectedNodes()]):
         nuke.message("Only Groups supported!\nYou can't add Hotkey for Gizmo or for Group that contains Gizmo!")
         return False
-    if helper.check_editor_in_nodegraph():
+    if nukeHelper.check_editor_in_nodegraph():
         nuke.message("Please close " + settings.edit_node_graph_menu_name + " first!")
         return False
-    if helper.find_edit_node_graph_action().isChecked():
+    if qtHelper.find_edit_node_graph_action().isChecked():
         nuke.message("Please uncheck " + settings.edit_node_graph_menu_name + " first!")
         return False
-    if helper.check_hotkey_manager_creator_is_opened():
+    if qtHelper.check_hotkey_manager_creator_is_opened():
         return False
     return True
 
@@ -426,7 +425,7 @@ def start():
     :return: None
     """
     if check_before_start():
-        nuke_main_window = helper.get_nuke_main_window()
+        nuke_main_window = qtHelper.get_nuke_main_window()
         nuke_main_window.setEnabled(False)
         creator_widget = HotkeyCreatorWidget(nuke_main_window)
         creator_widget.show()

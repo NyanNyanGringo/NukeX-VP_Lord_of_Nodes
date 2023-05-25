@@ -10,11 +10,11 @@ if nuke.NUKE_VERSION_MAJOR == 12:
 elif nuke.NUKE_VERSION_MAJOR >= 13:
     from PySide2.QtGui import Qt
 
-import helper_config
-import helper_hotkey_manager as helper
-import hotkey_manager_settings as settings
+from lord_of_nodes.helpers import toolsetsHelper, stringHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, \
+    qtHelper
+import lord_of_nodes.hotkey_manager_settings as settings
 
-import hotkey_creator
+from lord_of_nodes import hotkey_creator
 
 
 class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
@@ -31,7 +31,7 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
 
         self.toolset_name = self.table.selectedItems()[0].text()
         self.toolset_hotkey = self.table.selectedItems()[1].text()
-        self.input_node, self.output_node, self.show_panel_node = helper.find_input_output_show_panel_nodes(self.selected)
+        self.input_node, self.output_node, self.show_panel_node = nukeHelper.find_input_output_show_panel_nodes(self.selected)
 
         # SETUP UI
         self.ui_pushButton_create.setText("Save")
@@ -122,11 +122,11 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
         :return: None
         """
         if self.check_before_start_save_settings_if_table():
-            helper.delete_toolset_by_name(self.toolset_name)
+            toolsetsHelper.delete_toolset_by_name(self.toolset_name)
             self.set_input_output_show_panel_info_to_nodes()
             self.create_toolset()
             self.write_config_about_toolset()
-            helper.add_hotkey_to_menu_by_toolset_name(self.ui_lineEdit_name.text())
+            hotkeysHelper.add_hotkey_to_menu_by_toolset_name(self.ui_lineEdit_name.text())
             self.hotkey_edit_widget.fill_table()
             self.close()
             nuke.message(settings.finish_message)
@@ -144,20 +144,20 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
 
     def check_preset_with_same_name_exists_if_table(self):
         if not self.toolset_name == self.ui_lineEdit_name.text():
-            if (self.ui_lineEdit_name.text() + ".nk") in os.listdir(helper.get_toolset_path()):
+            if (self.ui_lineEdit_name.text() + ".nk") in os.listdir(osHelper.get_toolset_path()):
                 nuke.message("Preset with name " + self.ui_lineEdit_name.text() + " already exists!")
                 return True
         return False
 
     def check_hotkey_already_exists_if_table(self):
-        if os.path.exists(helper_config.get_user_config_path()):
-            for toolset_name, dict_of_values in helper_config.read_config().items():
+        if os.path.exists(configHelper.get_user_config_path()):
+            for toolset_name, dict_of_values in configHelper.read_config().items():
                 if self.get_hotkey() == dict_of_values["hotkey"] and self.get_hotkey() != self.toolset_hotkey:
                     nuke.message("Hotkey " + self.get_hotkey() + " already exist in preset " + toolset_name)
                     return True
             return False
         else:
-            nuke.message("No config in path: " + helper_config.get_user_config_path())
+            nuke.message("No config in path: " + configHelper.get_user_config_path())
             return False
 
     # HELPERS
@@ -241,12 +241,12 @@ class HotkeyEditMenuWidget(QWidget):
         self.ui_tableWidget.clearContents()
         self.ui_tableWidget.setRowCount(0)
 
-        for toolset_name, dict_of_values in helper_config.read_config().items():
+        for toolset_name, dict_of_values in configHelper.read_config().items():
             self.ui_tableWidget.setRowCount(self.ui_tableWidget.rowCount() + 1)
 
             item = QTableWidgetItem()
             item.setData(Qt.EditRole, toolset_name)
-            item.setToolTip(helper.get_string_of_all_nodes_of_toolset(toolset_name))
+            item.setToolTip(toolsetsHelper.get_string_of_all_nodes_of_toolset(toolset_name))
             item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
             self.ui_tableWidget.setItem(self.ui_tableWidget.rowCount() - 1, 0, item)
 
@@ -291,8 +291,8 @@ class HotkeyEditMenuWidget(QWidget):
         :return:
         """
         if len(self.ui_tableWidget.selectedItems()) == self.ui_tableWidget.columnCount():
-            if not helper.check_hotkey_manager_creator_is_opened():
-                nuke_main_window = helper.get_nuke_main_window()
+            if not qtHelper.check_hotkey_manager_creator_is_opened():
+                nuke_main_window = qtHelper.get_nuke_main_window()
                 self.setEnabled(False)
                 self.create_toolset_nodes_and_select_it()
                 edit_widget = HotkeyEditWidget(nuke_main_window, self)
@@ -311,7 +311,7 @@ class HotkeyEditMenuWidget(QWidget):
                 to_delete.append(item.text())
 
         if nuke.ask("Are you sure - you want to delete " + str(len(to_delete)) + " presets?"):
-            [helper.delete_toolset_by_name(toolset) for toolset in to_delete]
+            [toolsetsHelper.delete_toolset_by_name(toolset) for toolset in to_delete]
             self.fill_table()
             return True
         return False
@@ -330,7 +330,7 @@ class HotkeyEditMenuWidget(QWidget):
         :return: None
         """
         toolset_name = self.ui_tableWidget.selectedItems()[0].text()
-        toolset_path = os.path.join(helper.get_toolset_path(), toolset_name + ".nk").replace("\\", "/")
+        toolset_path = osHelper.get_toolset_path(toolset_name)
 
         if not os.path.exists(toolset_path):
             raise Exception("No toolset found with name: " + self.toolset_name)
@@ -350,13 +350,13 @@ def check_before_start():
     Check before start opening Edit Hotkeys Menu
     :return: bool
     """
-    if helper.check_editor_in_nodegraph():
+    if nukeHelper.check_editor_in_nodegraph():
         nuke.message("Please close" + settings.edit_node_graph_menu_name + " first!")
         return False
-    if helper.find_edit_node_graph_action().isChecked():
+    if qtHelper.find_edit_node_graph_action().isChecked():
         nuke.message("Please uncheck " + settings.edit_node_graph_menu_name + " first!")
         return False
-    if not helper.get_list_of_toolsets():
+    if not toolsetsHelper.get_list_of_toolsets():
         nuke.message("No Hotkeys exists!")
         return False
     return True
@@ -368,7 +368,7 @@ def start():
     :return: None
     """
     if check_before_start():
-        nuke_main_window = helper.get_nuke_main_window()
+        nuke_main_window = qtHelper.get_nuke_main_window()
         nuke_main_window.setEnabled(False)
         creator_widget = HotkeyEditMenuWidget(nuke_main_window)
         creator_widget.show()

@@ -6,13 +6,12 @@
 import nuke
 import os
 
-import hotkey_creator
-import hotkey_edit_menu
-import hotkey_edit_node_graph
+from lord_of_nodes import hotkey_creator
+from lord_of_nodes import hotkey_edit_menu
+from lord_of_nodes import hotkey_edit_node_graph
 
-import helper_config
-import helper_hotkey_manager as helper
-import hotkey_manager_settings as settings
+from lord_of_nodes.helpers import osHelper, configHelper, toolsetsHelper, hotkeysHelper, nukeHelper, qtHelper
+import lord_of_nodes.hotkey_manager_settings as settings
 
 
 # Create menu and menu items with actions
@@ -28,33 +27,32 @@ edit_node_graph.action().setCheckable(True)
 
 
 # Set icons
-icon_path = os.path.join(helper.get_current_path(), "icons")
-create.setIcon(os.path.join(icon_path, "create_icon.png"))
-edit.setIcon(os.path.join(icon_path, "menu_icon.png"))
+create.setIcon(os.path.join(osHelper.get_icon_path(), "create_icon.png"))
+edit.setIcon(os.path.join(osHelper.get_icon_path(), "menu_icon.png"))
 
 
 # Create config if it is not exists
-helper_config.check_config_exists_else_create_it()
+configHelper.check_config_exists_else_create_it()
 
 
 # Exclude our custom toolset path from main ToolSets
-nuke.addToolsetExcludePaths(os.path.dirname(helper.get_toolset_path()))
+nuke.addToolsetExcludePaths(os.path.dirname(osHelper.get_toolset_path()))
 
 
 # Create toolset path if not exists
-if not os.path.exists(helper.get_toolset_path()):
-    os.mkdir(helper.get_toolset_path())
+if not os.path.exists(osHelper.get_toolset_path()):
+    os.mkdir(osHelper.get_toolset_path())
 
 
 # Create shortcuts when Nuke starts
-for toolset in helper.get_list_of_toolsets():
-    helper.add_hotkey_to_menu_by_toolset_name(toolset)
+for toolset in toolsetsHelper.get_list_of_toolsets():
+    hotkeysHelper.add_hotkey_to_menu_by_toolset_name(toolset)
 
 
 # Set checked edit_node_graph if edit already opened in project
 def set_checked_edit_node_graph_command_if_edit_opened():
-    if helper.check_editor_in_nodegraph():
-        edit_node_graph_action = helper.find_edit_node_graph_action()
+    if nukeHelper.check_editor_in_nodegraph():
+        edit_node_graph_action = qtHelper.find_edit_node_graph_action()
         edit_node_graph_action.setChecked(True)
 
 

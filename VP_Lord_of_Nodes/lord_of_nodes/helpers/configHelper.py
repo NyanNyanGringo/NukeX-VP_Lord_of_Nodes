@@ -7,7 +7,8 @@ Library to work with config-files .json
 import json
 import os
 
-import helper_hotkey_manager
+
+from lord_of_nodes.helpers import osHelper
 
 
 def get_user_config_path():
@@ -16,7 +17,7 @@ def get_user_config_path():
     :
     :rtype: str
     """
-    return os.path.join(helper_hotkey_manager.get_current_path(), "hotkey_manager_config.json").replace("\\", "/")
+    return os.path.join(osHelper.get_config_path(), "hotkey_manager_config.json").replace("\\", "/")
 
 
 def write_configs(keys, confs, conf_file_path=get_user_config_path()):
