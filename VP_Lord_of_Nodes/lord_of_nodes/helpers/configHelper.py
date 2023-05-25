@@ -165,6 +165,9 @@ def delete_key(key, conf_file_path=get_user_config_path()):
 
 
 def check_config_exists_else_create_it(conf_file_path=get_user_config_path()):
+    if not os.path.exists(osHelper.get_config_path()):
+        os.mkdir(osHelper.get_config_path())
+
     if not os.path.isfile(conf_file_path):
         write_config("TEMP_KEY", "TEMP_VALUE")
         delete_key("TEMP_KEY")
