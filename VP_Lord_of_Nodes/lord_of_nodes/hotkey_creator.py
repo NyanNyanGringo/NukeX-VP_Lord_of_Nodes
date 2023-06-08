@@ -2,8 +2,9 @@ import nuke
 import os
 import re
 
-from PySide2.QtWidgets import QWidget, QCompleter
+from PySide2.QtWidgets import QWidget, QSpacerItem, QSizePolicy, QCompleter
 from PySide2.QtCore import QSize
+
 if nuke.NUKE_VERSION_MAJOR == 12:
     from PySide2.QtCore import Qt
 elif nuke.NUKE_VERSION_MAJOR >= 13:
@@ -12,14 +13,16 @@ elif nuke.NUKE_VERSION_MAJOR >= 13:
 from lord_of_nodes.widgets import creatorWidget
 from lord_of_nodes.helpers import toolsetsHelper, stringHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, \
     qtHelper
+from lord_of_nodes.helpers.CustomWidgets.custom_pulldown_choice import CustomPulldownChoice
 import lord_of_nodes.hotkey_manager_settings as settings
 
 
-class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
+class HotkeyCreatorWidget(QWidget):
     """
     The main Class of Hotkey Manager that helps to create Hotkeys.
     It works with nuke.selectedNodes() as default parameter.
     """
+
     def __init__(self, parent=None):
         super(HotkeyCreatorWidget, self).__init__(parent, Qt.Window)
 
@@ -30,13 +33,21 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         self.selected = nuke.selectedNodes()
 
         # SETUP UI
-        self.setupUi(self)
+        self.ui = creatorWidget.Ui_creatorWidget()
+        self.ui.setupUi(self)
+        
+        self.add_custom_widgets()
+        self.add_tooltips()
         self.setParent(self.parent)
         self.setWindowFlags(Qt.Tool)
-
         self.setWindowTitle(settings.creator_widget_menu_title)
         self.setFixedSize(QSize(0, 0))
-        self.ui_pushButton_delete.hide()
+
+        self.ui.tabWidget.setCurrentIndex(0)
+
+        self.ui.pushButton_delete.hide()
+        self.ui.label_5.hide()  # hide show_panel label
+        self.ui.comboBox_show_panel.hide()
 
         # CONSTRUCT
         self.construct()
@@ -45,6 +56,56 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         self.make_connects_for_autofill()
         self.make_connects_for_autofix()
         self.make_connects_for_main_buttons()
+
+    # SETUP UI
+
+    def add_custom_widgets(self):
+        self.ui_show_panel = CustomPulldownChoice(self, "Show Panel for:")
+        self.ui.tab_advanced.layout().addWidget(self.ui_show_panel)
+
+        self.ui_context_sensitive = CustomPulldownChoice(self, "Context-Sensitive for:")
+        self.ui.tab_advanced.layout().addWidget(self.ui_context_sensitive)
+
+        self.ui_knob_default = CustomPulldownChoice(self, "Knob Default for:")
+        self.ui.tab_advanced.layout().addWidget(self.ui_knob_default)
+
+        self.ui.tab_advanced.layout().addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+    def add_tooltips(self):
+        self.ui.comboBox_input_node.setToolTip(
+            stringHelper.auto_enter("When you trigger Hotkey, input of given node will be connected to selection."))
+
+        self.ui.comboBox_output_node.setToolTip(
+            stringHelper.auto_enter("When you trigger Hotkey, output of given node will be connected to branch."))
+
+        self.ui.lineEdit_name.setToolTip(
+            stringHelper.auto_enter("Name of preset should be unique - you can't create presets with "
+                                    "the same name. Recommended to use names of nodes in preset name. "
+                                    "For example, if you have Blur and Roto nodes, preset might be called "
+                                    "as 'BlurRoto'"))
+
+        for knob in [self.ui.checkBox_ctrl_hotkey, self.ui.checkBox_shift_hotkey, self.ui.checkBox_alt_hotkey,
+                     self.ui.lineEdit_hotkey]:
+            knob.setToolTip("Hotkeys to create preset.")
+
+        self.ui_show_panel.setToolTip(
+            stringHelper.auto_enter("Responsible for which nodes Contol Panel will be shown."))
+
+        self.ui_context_sensitive.setToolTip(
+            "Responsible for which nodes will be applied context-sensitive knob values.\n\n"
+            "For example, node Transform has 'center' knob. Value of this knob depends\n"
+            "on context. If we create Transform out of branch - 'center' knob takes\n"
+            "as value width/height of Root format. Else, if we create Transform inside\n"
+            "branch - 'center' knob takes as value width/height of input nodes.\n\n"
+            "In this version of program next context-sensitive nodes supported:\n"
+            "" + stringHelper.auto_enter(" ".join(hotkeysHelper.get_supported_context_sensitive_knobs()))
+            )
+
+        self.ui_knob_default.setToolTip(
+            stringHelper.auto_enter("Hotkeys works in ToolSet engine - it means every time you trigger Hotkey, "
+                                    "Nuke create ToolSet. All knob values inside ToolSet remain "
+                                    "the same. If you want to use Knob Default values (that you made using appropriate "
+                                    "functional of Lord of Nodes) - you can point out it here."))
 
     # CONSTRUCT
 
@@ -58,12 +119,14 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         self.autofill_name()
         self.autofill_show_panel()
         self.autofill_names()
+        self.autofill_context_sensitive()
+        self.autofill_knob_default()
 
         self.setup_completer()
 
-        self.ui_lineEdit_hotkey.setMaximumWidth(24)
-        self.ui_comboBox_names.setMaximumWidth(24)
-        self.ui_lineEdit_hotkey.setAlignment(Qt.AlignCenter)
+        self.ui.lineEdit_hotkey.setMaximumWidth(24)
+        self.ui.comboBox_names.setMaximumWidth(24)
+        self.ui.lineEdit_hotkey.setAlignment(Qt.AlignCenter)
 
     def setup_completer(self):
         """
@@ -74,7 +137,7 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         completer = QCompleter(sorted([file for file in toolsetsHelper.get_list_of_toolsets()]))
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         completer.setFilterMode(Qt.MatchContains)
-        self.ui_lineEdit_name.setCompleter(completer)
+        self.ui.lineEdit_name.setCompleter(completer)
 
     # CONNECTS
 
@@ -83,10 +146,10 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         Connects design to make user-widget-fill experience easier
         :return: None
         """
-        self.ui_comboBox_input_node.currentIndexChanged.connect(self.autofill_name)
-        self.ui_comboBox_input_node.currentIndexChanged.connect(self.autofill_output_node)
-        self.ui_comboBox_names.currentIndexChanged.connect(
-            lambda: self.ui_lineEdit_name.setText(self.ui_comboBox_names.currentText())
+        self.ui.comboBox_input_node.currentIndexChanged.connect(self.autofill_name)
+        self.ui.comboBox_input_node.currentIndexChanged.connect(self.autofill_output_node)
+        self.ui.comboBox_names.currentIndexChanged.connect(
+            lambda: self.ui.lineEdit_name.setText(self.ui.comboBox_names.currentText())
         )
 
     def make_connects_for_autofix(self):
@@ -94,16 +157,16 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         Connects design to fix some user inputs
         :return: None
         """
-        self.ui_lineEdit_hotkey.textChanged.connect(self.autofix_hotkey)
-        self.ui_lineEdit_name.textChanged.connect(self.autofix_name)
+        self.ui.lineEdit_hotkey.textChanged.connect(self.autofix_hotkey)
+        self.ui.lineEdit_name.textChanged.connect(self.autofix_name)
 
     def make_connects_for_main_buttons(self):
         """
         Connects the same as accept or reject
         :return: None
         """
-        self.ui_pushButton_create.clicked.connect(self.start_create_hotkey)
-        self.ui_pushButton_cancel.clicked.connect(self.close)
+        self.ui.pushButton_create.clicked.connect(self.start_create_hotkey)
+        self.ui.pushButton_cancel.clicked.connect(self.close)
 
     # AUTOFILL
 
@@ -113,16 +176,17 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         Find topnode of selection and set it as widget default parameter.
         :return: None
         """
-        self.ui_comboBox_input_node.addItem(self._not_show_panel_name)
+        self.ui.comboBox_input_node.addItem(self._not_show_panel_name)
         i = 1
         for selected_node in self.selected:
-            self.ui_comboBox_input_node.addItem(selected_node.name())
-            self.ui_comboBox_input_node.setItemData(i, selected_node, 32)
+            self.ui.comboBox_input_node.addItem(selected_node.name())
+            self.ui.comboBox_input_node.setItemData(i, selected_node, 32)
+            self.ui.comboBox_input_node.setItemData(Qt.Unchecked | Qt.ItemIsUserCheckable, Qt.CheckStateRole)
             i += 1
 
         topnode = self.get_topnode_from_selected()
-        index = self.ui_comboBox_input_node.findText(topnode.name(), Qt.MatchFixedString)
-        self.ui_comboBox_input_node.setCurrentIndex(index)
+        index = self.ui.comboBox_input_node.findText(topnode.name(), Qt.MatchFixedString)
+        self.ui.comboBox_input_node.setCurrentIndex(index)
 
     def autofill_output_node(self):
         """
@@ -130,26 +194,26 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         Set default parameter as toolset input widget has.
         :return: None
         """
-        self.ui_comboBox_output_node.clear()
-        self.ui_comboBox_output_node.addItem(self._not_show_panel_name)
+        self.ui.comboBox_output_node.clear()
+        self.ui.comboBox_output_node.addItem(self._not_show_panel_name)
         i = 1
         for selected_node in self.selected:
-            self.ui_comboBox_output_node.addItem(selected_node.name())
-            self.ui_comboBox_output_node.setItemData(i, selected_node, 32)
+            self.ui.comboBox_output_node.addItem(selected_node.name())
+            self.ui.comboBox_output_node.setItemData(i, selected_node, 32)
             i += 1
 
-        index = self.ui_comboBox_input_node.currentIndex()
-        self.ui_comboBox_output_node.setCurrentIndex(index)
+        index = self.ui.comboBox_input_node.currentIndex()
+        self.ui.comboBox_output_node.setCurrentIndex(index)
 
     def autofill_name(self):
         """
         Fills toolset name widget with class of toolset input widget node
         :return: None
         """
-        if not self.ui_comboBox_input_node.currentText() == self._not_show_panel_name:
-            node_class = self.ui_comboBox_input_node.currentData(32).Class()
+        if not self.ui.comboBox_input_node.currentText() == self._not_show_panel_name:
+            node_class = self.ui.comboBox_input_node.currentData(32).Class()
             node_class_no_digits = ''.join([symbol for symbol in node_class if not symbol.isdigit()])
-            self.ui_lineEdit_name.setText(node_class_no_digits)
+            self.ui.lineEdit_name.setText(node_class_no_digits)
             self.autofix_name()
 
     def autofill_names(self):
@@ -157,23 +221,35 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         Fills toolset names widget with all toolset names
         :return: None
         """
-        self.ui_comboBox_names.addItem("")
-        self.ui_comboBox_names.addItems(toolsetsHelper.get_list_of_toolsets())
+        self.ui.comboBox_names.addItem("")
+        self.ui.comboBox_names.addItems(toolsetsHelper.get_list_of_toolsets())
 
     def autofill_show_panel(self):
         """
-        Fills toolset show panel widget with [None + selected nodes classes].
+        Fills toolset show panel widget with [None + selected nodes names].
         Set default parameter as None
         :return: None
         """
-        self.ui_comboBox_show_panel.addItem(self._not_show_panel_name)
-        i = 1
         for selected_node in self.selected:
-            self.ui_comboBox_show_panel.addItem(selected_node.name())
-            self.ui_comboBox_show_panel.setItemData(i, selected_node, 32)
-            i += 1
+            item = self.ui_show_panel.addItem(selected_node.name())
+            self.ui_show_panel.setItemData(item, selected_node)
 
-        self.ui_comboBox_show_panel.setCurrentIndex(0)
+    def autofill_context_sensitive(self):
+        """
+        Fills toolset context-sensitive widget with selected nodes names.
+        :return: None
+        """
+
+        for selected_node in self.selected:
+            if hotkeysHelper.check_node_has_context_sensitive_knobs(selected_node):
+                item = self.ui_context_sensitive.addItem(selected_node.name())
+                item.setChecked(True)
+                self.ui_context_sensitive.setItemData(item, selected_node)
+
+    def autofill_knob_default(self):
+        for selected_node in self.selected:
+            item = self.ui_knob_default.addItem(selected_node.name())
+            self.ui_knob_default.setItemData(item, selected_node)
 
     def autofix_hotkey(self):
         """
@@ -181,22 +257,22 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         toolset hotkey widget
         :return: None
         """
-        find_all_letters_or_number = re.findall(r"\w", self.ui_lineEdit_hotkey.text())
+        find_all_letters_or_number = re.findall(r"\w", self.ui.lineEdit_hotkey.text())
         find_all_english = [s for s in find_all_letters_or_number if stringHelper.check_symbol_is_english(s)]
         if find_all_english:
-            self.ui_lineEdit_hotkey.setText(find_all_english[-1].lower())
+            self.ui.lineEdit_hotkey.setText(find_all_english[-1].lower())
             return
-        self.ui_lineEdit_hotkey.setText("")
+        self.ui.lineEdit_hotkey.setText("")
 
     def autofix_name(self):
         """
         Check any user toolset name input. If some symbols aren't correct - deletes it
         :return: None
         """
-        corrected_text = (re.findall(r"\w", self.ui_lineEdit_name.text()))
+        corrected_text = (re.findall(r"\w", self.ui.lineEdit_name.text()))
         corrected_text = ''.join([s for s in corrected_text if stringHelper.check_symbol_is_english(s)])
         if corrected_text:
-            self.ui_lineEdit_name.setText(corrected_text)
+            self.ui.lineEdit_name.setText(corrected_text)
 
     # CREATE HOTKEY
 
@@ -206,34 +282,47 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         :return: None
         """
         if self.check_before_start_create_hotkey():
-            self.set_input_output_show_panel_info_to_nodes()
+            self.set_extra_knobs_to_nodes()
             self.create_toolset()
-            nukeHelper.delete_extra_knobs_from_toolset_nodes(self.selected)
+            hotkeysHelper.get_nodes_by_extra_knobs_and_delete_extra_knobs(self.selected)
             self.write_config_about_toolset()
-            hotkeysHelper.add_hotkey_to_menu_by_toolset_name(self.ui_lineEdit_name.text())
+            hotkeysHelper.add_hotkey_to_menu_by_toolset_name(self.ui.lineEdit_name.text())
             self.close()
             nuke.message(settings.finish_message)
 
-    def set_input_output_show_panel_info_to_nodes(self):
+    def set_extra_knobs_to_nodes(self):
         """
-        Set some knobs for selected nodes. When Nuke will create toolset -
+        Set some extra knobs for selected nodes. When Nuke will create toolset -
         it will understand what node should be input, output and for what
         node need to show panel
         :return: None
         """
-        input_node = self.ui_comboBox_input_node.currentData(32)
+        input_node = self.ui.comboBox_input_node.currentData(32)
         input_node.addKnob(nuke.String_Knob("HK_input_node"))
 
-        output_node = self.ui_comboBox_output_node.currentData(32)
+        output_node = self.ui.comboBox_output_node.currentData(32)
         output_node.addKnob(nuke.String_Knob("HK_output_node"))
 
-        show_panel_node = None
-        if self.ui_comboBox_show_panel.currentText() != self._not_show_panel_name:
-            show_panel_node = self.ui_comboBox_show_panel.currentData(32)
-            show_panel_node.addKnob(nuke.String_Knob("HK_show_panel_node"))
+        show_panel_nodes = []
+        for item in self.ui_show_panel.items(only_checked=True):
+            node = self.ui_show_panel.getItemData(item)
+            node.addKnob(nuke.String_Knob("HK_show_panel_node"))
+            show_panel_nodes.append(node)
+
+        context_sensetive_nodes = []
+        for item in self.ui_context_sensitive.items(only_checked=True):
+            node = self.ui_context_sensitive.getItemData(item)
+            node.addKnob(nuke.String_Knob("HK_context_sensitive"))
+            context_sensetive_nodes.append(node)
+
+        knob_default_nodes = []
+        for item in self.ui_knob_default.items(only_checked=True):
+            node = self.ui_knob_default.getItemData(item)
+            node.addKnob(nuke.String_Knob("HK_knob_default"))
+            knob_default_nodes.append(node)
 
         for node in self.selected:
-            if node not in [input_node, output_node, show_panel_node]:
+            if node not in [input_node, output_node] + show_panel_nodes + context_sensetive_nodes + knob_default_nodes:
                 node.addKnob(nuke.String_Knob("HK_other_node"))
 
     def create_toolset(self):
@@ -243,12 +332,12 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         """
         [node.setSelected(False) for node in nuke.allNodes()]
         [node.setSelected(True) for node in self.selected]
-        nuke.createToolset(filename=self.ui_lineEdit_name.text(),
+        nuke.createToolset(filename=self.ui.lineEdit_name.text(),
                            overwrite=True,
                            rootPath=osHelper.get_config_path())
 
         # Delete first three strings in Toolset file, so it won't be connected to version of Nuke
-        toolset_path = osHelper.get_toolset_path(toolset_name=self.ui_lineEdit_name.text())
+        toolset_path = osHelper.get_toolset_path(toolset_name=self.ui.lineEdit_name.text())
         lines_without_version = []
         with open(toolset_path, "r") as file:
             for index, line in enumerate(file):
@@ -265,8 +354,8 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         Write to config file name of created toolset, and it's hotkey
         :return: None
         """
-        configHelper.write_config(key=self.ui_lineEdit_name.text(),
-                                   conf={"hotkey": self.get_hotkey()})
+        configHelper.write_config(key=self.ui.lineEdit_name.text(),
+                                  conf={"hotkey": self.get_hotkey()})
 
     # CHECKERS
 
@@ -285,20 +374,20 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         return False
 
     def check_preset_name_is_not_empty(self):
-        if self.ui_lineEdit_name.text().replace(" ", "") == "":
+        if self.ui.lineEdit_name.text().replace(" ", "") == "":
             nuke.message("Field 'Preset Name' can't be empty!")
             return False
         return True
 
     def check_hotkey_is_not_empty(self):
-        if self.ui_lineEdit_hotkey.text().replace(" ", "") == "":
+        if self.ui.lineEdit_hotkey.text().replace(" ", "") == "":
             nuke.message("Field 'HotKey' can't be empty!")
             return False
         return True
 
     def check_preset_with_same_name_exists(self):
-        if (self.ui_lineEdit_name.text() + ".nk") in os.listdir(osHelper.get_toolset_path()):
-            nuke.message("Preset with name " + self.ui_lineEdit_name.text() + " already exists!")
+        if (self.ui.lineEdit_name.text() + ".nk") in os.listdir(osHelper.get_toolset_path()):
+            nuke.message("Preset with name " + self.ui.lineEdit_name.text() + " already exists!")
             return True
         return False
 
@@ -315,7 +404,7 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         return False
 
     def check_input_output_is_not_none(self):
-        if self.ui_comboBox_input_node.currentIndex() == 0 or self.ui_comboBox_output_node.currentIndex() == 0:
+        if self.ui.comboBox_input_node.currentIndex() == 0 or self.ui.comboBox_output_node.currentIndex() == 0:
             nuke.message("Input or Output can't be " + self._not_show_panel_name)
             return False
         return True
@@ -383,13 +472,13 @@ class HotkeyCreatorWidget(QWidget, creatorWidget.Ui_creatorWidget):
         :return: str
         """
         hotkey = str()
-        if self.ui_checkBox_ctrl_hotkey.isChecked():
+        if self.ui.checkBox_ctrl_hotkey.isChecked():
             hotkey += "ctrl+"
-        if self.ui_checkBox_shift_hotkey.isChecked():
+        if self.ui.checkBox_shift_hotkey.isChecked():
             hotkey += "shift+"
-        if self.ui_checkBox_alt_hotkey.isChecked():
+        if self.ui.checkBox_alt_hotkey.isChecked():
             hotkey += "alt+"
-        hotkey += self.ui_lineEdit_hotkey.text()
+        hotkey += self.ui.lineEdit_hotkey.text()
 
         return hotkey
 
@@ -404,6 +493,9 @@ def check_before_start():
         return False
     if "Viewer" in [node.Class() for node in nuke.selectedNodes()]:
         nuke.message("Viewer can't be in hotkeys!")
+        return False
+    if "BackdropNode" in [node.Class() for node in nuke.selectedNodes()]:
+        nuke.message("I'm sorry, BackdropNode can't be in hotkeys!")
         return False
     if any([nukeHelper.check_node_is_gizmo_or_contains_gizmo(node) for node in nuke.selectedNodes()]):
         nuke.message("Only Groups supported!\nYou can't add Hotkey for Gizmo or for Group that contains Gizmo!")

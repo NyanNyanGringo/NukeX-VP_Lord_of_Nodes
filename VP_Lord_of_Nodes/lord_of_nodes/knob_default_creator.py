@@ -7,8 +7,14 @@ from lord_of_nodes.helpers import presetHelper, configHelper
 # APPLY ON USER CREATE
 
 
-def apply_preset_on_user_create():
-    node = nuke.thisNode()
+def apply_preset_on_user_create(node=None):
+    """
+    This func calls every time onUserCreate callback. By adding node arg
+    we can call this func manually - so preser/knobdefault will be applied
+    to node.
+    """
+    if not node:
+        node = nuke.thisNode()
     node_id = presetHelper.get_node_id(node)
 
     config = configHelper.get_presets_config_path()
@@ -29,7 +35,7 @@ def apply_preset_on_user_create():
         nuke.deleteUserPreset(node_id, temp_preset_name)
         nukescripts.nodepresets.saveNodePresets()
 
-        return True
+        presetHelper.cleanup_user_presets_py(temp_preset_name)
 
 
 # CONFIG

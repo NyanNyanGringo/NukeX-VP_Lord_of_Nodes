@@ -1,21 +1,15 @@
-"""
-# TODO: Bug with C++ doesn't exists when open create hotkey menu
-# TODO: Funtion to delete from .nuke lines with custom presets
-
-
-"""
-
-
 import nuke
 import os
+
+from PySide2.QtGui import QIcon
 
 from lord_of_nodes import hotkey_creator
 from lord_of_nodes import hotkey_edit_menu
 from lord_of_nodes import hotkey_edit_node_graph
 from lord_of_nodes import knob_default_creator
+import lord_of_nodes.hotkey_manager_settings as settings
 
 from lord_of_nodes.helpers import osHelper, configHelper, toolsetsHelper, hotkeysHelper, nukeHelper, qtHelper
-import lord_of_nodes.hotkey_manager_settings as settings
 
 
 # Create menu and menu items with actions
@@ -34,8 +28,10 @@ remove_knobs = menu.addCommand(settings.remove_knob_default_menu_name, knob_defa
 
 
 # Set icons
-create.setIcon(os.path.join(osHelper.get_icon_path(), "create_icon.png"))
-edit.setIcon(os.path.join(osHelper.get_icon_path(), "menu_icon.png"))
+create.setIcon(os.path.join(osHelper.get_icon_path(), "gandalf_icon.png"))
+edit.setIcon(os.path.join(osHelper.get_icon_path(), "legalas_icon.png"))
+set_knobs.setIcon(os.path.join(osHelper.get_icon_path(), "golumn_icon.png"))
+remove_knobs.setIcon(os.path.join(osHelper.get_icon_path(), "golumn_dead_icon.png"))
 
 
 # Create config if it is not exists
@@ -69,3 +65,11 @@ nuke.addOnScriptLoad(set_checked_edit_node_graph_command_if_edit_opened)
 
 # make knob default
 nuke.addOnUserCreate(knob_default_creator.apply_preset_on_user_create)
+
+
+# auto update
+from lord_of_nodes.app_updater import updateHelper
+menu.addSeparator()
+action = updateHelper.add_update_action_to_menu(menu)  # to update by clicking action
+updateHelper.start_updating_application_when_initiazile(action)  # to ckeck update when initialize
+action.setIcon(QIcon(os.path.join(osHelper.get_icon_path(), "ring_icon.png")))

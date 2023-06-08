@@ -1,9 +1,8 @@
 import nuke
-import nukescripts
 import os
 
-from lord_of_nodes.helpers import toolsetsHelper, stringHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, \
-    qtHelper
+from lord_of_nodes.helpers import toolsetsHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, qtHelper,\
+    autobackdrop
 import lord_of_nodes.hotkey_manager_settings as settings
 
 from lord_of_nodes import hotkey_creator
@@ -25,7 +24,7 @@ class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
         self.emitter_node = emitter_node  # If class emitted from node (button "SAVE" from NodeGraph)
 
         # SETUP UI
-        self.ui_pushButton_create.setText("Save")
+        self.ui.pushButton_create.setText("Save")
 
         # CONSTRUCT
         self.construct_if_emitter()
@@ -44,43 +43,44 @@ class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
     # CONNECTS
 
     def connects_if_emitter(self):
-        self.ui_comboBox_input_node.currentIndexChanged.disconnect()
-        self.ui_comboBox_input_node.currentIndexChanged.connect(self.autofill_output_node)
+        self.ui.comboBox_input_node.currentIndexChanged.disconnect()
+        self.ui.comboBox_input_node.currentIndexChanged.connect(self.autofill_output_node)
 
-        self.ui_pushButton_create.clicked.disconnect()
-        self.ui_pushButton_create.clicked.connect(self.start_create_hotkey_if_emitter)
+        self.ui.pushButton_create.clicked.disconnect()
+        self.ui.pushButton_create.clicked.connect(self.start_create_hotkey_if_emitter)
 
     # AUTOFILL
 
     def autofill_input_node_if_emitter(self):
-        self.ui_comboBox_input_node.setCurrentIndex(0)
+        self.ui.comboBox_input_node.setCurrentIndex(0)
 
     def autofill_output_node_if_emitter(self):
-        self.ui_comboBox_output_node.setCurrentIndex(0)
+        self.ui.comboBox_output_node.setCurrentIndex(0)
 
     def autofill_name_if_emitter(self):
-        self.ui_lineEdit_name.setText(self.get_toolset_name_from_emitter())
+        self.ui.lineEdit_name.setText(self.get_toolset_name_from_emitter())
 
     def autofill_hotkey_if_emitter(self):
         hotkey = configHelper.read_config_key(self.get_toolset_name_from_emitter())["hotkey"]
         if "ctrl" in hotkey:
-            self.ui_checkBox_ctrl_hotkey.setChecked(True)
+            self.ui.checkBox_ctrl_hotkey.setChecked(True)
         if "shift" in hotkey:
-            self.ui_checkBox_shift_hotkey.setChecked(True)
+            self.ui.checkBox_shift_hotkey.setChecked(True)
         if "alt" in hotkey:
-            self.ui_checkBox_alt_hotkey.setChecked(True)
-        self.ui_lineEdit_hotkey.setText(hotkey[-1])
+            self.ui.checkBox_alt_hotkey.setChecked(True)
+        self.ui.lineEdit_hotkey.setText(hotkey[-1])
 
     # CREATE HOTKEY
 
     def start_create_hotkey_if_emitter(self):
         if self.check_before_start_create_hotkey_if_emitter():
             toolsetsHelper.delete_toolset_by_name(self.get_toolset_name_from_emitter())
-            self.set_input_output_show_panel_info_to_nodes()
+            self.set_extra_knobs_to_nodes()
             self.create_toolset()
-            nukeHelper.delete_extra_knobs_from_toolset_nodes(self.selected)
+            hotkeysHelper.get_nodes_by_extra_knobs_and_delete_extra_knobs(self.selected)
+            # nukeHelper.delete_extra_knobs_from_toolset_nodes(self.selected)  # looks like mistake
             self.write_config_about_toolset()
-            hotkeysHelper.add_hotkey_to_menu_by_toolset_name(self.ui_lineEdit_name.text())
+            hotkeysHelper.add_hotkey_to_menu_by_toolset_name(self.ui.lineEdit_name.text())
             self.rename_nodes_if_edit_opened_in_nodegraph()
             self.close()
             nuke.message(settings.finish_message)
@@ -88,7 +88,7 @@ class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
     def rename_nodes_if_edit_opened_in_nodegraph(self):
         last_preset_name = self.get_toolset_name_from_emitter()
 
-        new_preset_name = self.ui_lineEdit_name.text()
+        new_preset_name = self.ui.lineEdit_name.text()
         new_hotkey = self.get_hotkey()
 
         save_node = self.emitter_node
@@ -122,9 +122,9 @@ class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
                                 return True
 
     def check_preset_with_same_name_exists_if_emitter(self):
-        if not self.get_toolset_name_from_emitter() == self.ui_lineEdit_name.text():
-            if (self.ui_lineEdit_name.text() + ".nk") in os.listdir(osHelper.get_toolset_path()):
-                nuke.message("Preset with name " + self.ui_lineEdit_name.text() + " already exists!")
+        if not self.get_toolset_name_from_emitter() == self.ui.lineEdit_name.text():
+            if (self.ui.lineEdit_name.text() + ".nk") in os.listdir(osHelper.get_toolset_path()):
+                nuke.message("Preset with name " + self.ui.lineEdit_name.text() + " already exists!")
                 return True
         return False
 
@@ -161,7 +161,7 @@ def show_editor_in_nodegraph():
     for toolset_name in toolsets_to_create:
         try:
             toolset_nodes = toolsetsHelper.load_and_get_toolset_nodes(toolset_name)
-            nukeHelper.find_input_output_show_panel_nodes(toolset_nodes)
+            hotkeysHelper.get_nodes_by_extra_knobs_and_delete_extra_knobs(toolset_nodes)
             for node in toolset_nodes:
                 nuke.delete(node)
         except RuntimeError:
@@ -188,7 +188,7 @@ def show_editor_in_nodegraph():
 
         # Get and setup BackDrop
         [node.setSelected(True) for node in toolset_nodes]
-        backdrop = nukescripts.autoBackdrop()
+        backdrop = autobackdrop.autoBackdrop()
         hotkey = configHelper.read_config_key(toolset_name)["hotkey"]
         backdrop["label"].setValue(nukeHelper.get_label_for_backdrop(toolset_name, hotkey))
         backdrop["tile_color"].setValue(settings.bg_color)
@@ -282,10 +282,10 @@ def show_editor_in_nodegraph():
             start_x = start_x_before
             start_y += longest_side + 50
 
-    # Delete knobs input, output and show_panel in toolset nodes
+    # Delete extra knobs in toolset nodes
     for items in list_of_items:
         backdrop, save_node, delete_node, toolset_nodes = get_backdrop_n_buttons_n_toolset_nodes(items)
-        nukeHelper.find_input_output_show_panel_nodes(toolset_nodes)
+        hotkeysHelper.get_nodes_by_extra_knobs_and_delete_extra_knobs(toolset_nodes)
 
     # Set additional settings for BackDrop and Buttons
     for items in list_of_items:

@@ -1,6 +1,7 @@
 import nuke
 
-from PySide2.QtWidgets import QApplication
+from PySide2.QtWidgets import QApplication, QComboBox
+from PySide2.QtCore import Qt
 
 import lord_of_nodes.hotkey_manager_settings as settings
 
@@ -98,3 +99,40 @@ def find_edit_node_graph_action():
     :return: QAction
     """
     return find_item_in_menu(name=settings.edit_node_graph_menu_name, menu=nuke.menu("Nuke")).action()
+
+
+class CheckableComboBox(QComboBox):
+    """
+    Copy from: https://learndataanalysis.org/how-to-create-checkable-combobox-widget-pyqt5-tutorial/
+    """
+    def __init__(self):
+        super().__init__()
+        self._changed = False
+
+        self.view().pressed.connect(self.handleItemPressed)
+
+    def setItemChecked(self, index, checked=False):
+        item = self.model().item(index, self.modelColumn())  # QStandardItem object
+
+        if checked:
+            item.setCheckState(Qt.Checked)
+        else:
+            item.setCheckState(Qt.Unchecked)
+
+    def handleItemPressed(self, index):
+        item = self.model().itemFromIndex(index)
+
+        if item.checkState() == Qt.Checked:
+            item.setCheckState(Qt.Unchecked)
+        else:
+            item.setCheckState(Qt.Checked)
+        self._changed = True
+
+    def hidePopup(self):
+        if not self._changed:
+            super().hidePopup()
+        self._changed = False
+
+    def itemChecked(self, index):
+        item = self.model().item(index, self.modelColumn())
+        return item.checkState() == Qt.Checked

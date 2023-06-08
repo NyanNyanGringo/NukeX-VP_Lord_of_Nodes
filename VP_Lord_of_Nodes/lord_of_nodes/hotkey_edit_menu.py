@@ -10,8 +10,7 @@ if nuke.NUKE_VERSION_MAJOR == 12:
 elif nuke.NUKE_VERSION_MAJOR >= 13:
     from PySide2.QtGui import Qt
 
-from lord_of_nodes.helpers import toolsetsHelper, stringHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, \
-    qtHelper
+from lord_of_nodes.helpers import toolsetsHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, qtHelper
 import lord_of_nodes.hotkey_manager_settings as settings
 
 from lord_of_nodes import hotkey_creator
@@ -21,20 +20,24 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
     """
     Modified instance of HotkeyCreatorWidget used to edit exists toolsets
     """
-    def __init__(self, parent=None, hotkey_edit_widget=None):
+    def __init__(self, parent=None, hotkey_edit_widget_menu=None):
         super(HotkeyEditWidget, self).__init__(parent)
 
         # VARIABLES
         self.parent = parent
-        self.hotkey_edit_widget = hotkey_edit_widget
-        self.table = self.hotkey_edit_widget.ui_tableWidget
+        self.hotkey_edit_widget_menu = hotkey_edit_widget_menu
+        self.table = self.hotkey_edit_widget_menu.ui_tableWidget
 
         self.toolset_name = self.table.selectedItems()[0].text()
         self.toolset_hotkey = self.table.selectedItems()[1].text()
-        self.input_node, self.output_node, self.show_panel_node = nukeHelper.find_input_output_show_panel_nodes(self.selected)
+        self.input_node,\
+        self.output_node,\
+        self.show_panel_nodes,\
+        self.context_sensitive_nodes,\
+        self.knob_default_nodes = hotkeysHelper.get_nodes_by_extra_knobs_and_delete_extra_knobs(self.selected)
 
         # SETUP UI
-        self.ui_pushButton_create.setText("Save")
+        self.ui.pushButton_create.setText("Save")
 
         # CONSTRUCT
         self.construct_if_table()
@@ -55,6 +58,8 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
         self.autofill_name_if_table()
         self.autofill_hotkey_if_table()
         self.autofill_show_panel_if_table()
+        self.autofill_context_sensitive_if_table()
+        self.autofill_knob_default_if_table()
 
     # AUTOFILL
 
@@ -64,8 +69,8 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
         Find toolset input node and set it as widget default parameter.
         :return: None
         """
-        index = self.ui_comboBox_input_node.findText(self.input_node.name(), Qt.MatchFixedString)
-        self.ui_comboBox_input_node.setCurrentIndex(index)
+        index = self.ui.comboBox_input_node.findText(self.input_node.name(), Qt.MatchFixedString)
+        self.ui.comboBox_input_node.setCurrentIndex(index)
 
     def autofill_output_node_if_table(self):
         """
@@ -73,15 +78,15 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
         Find toolset output node and set it as widget default parameter.
         :return: None
         """
-        index = self.ui_comboBox_output_node.findText(self.output_node.name(), Qt.MatchFixedString)
-        self.ui_comboBox_output_node.setCurrentIndex(index)
+        index = self.ui.comboBox_output_node.findText(self.output_node.name(), Qt.MatchFixedString)
+        self.ui.comboBox_output_node.setCurrentIndex(index)
 
     def autofill_name_if_table(self):
         """
         Fills toolset name widget with toolset name
         :return: None
         """
-        self.ui_lineEdit_name.setText(self.toolset_name)
+        self.ui.lineEdit_name.setText(self.toolset_name)
 
     def autofill_hotkey_if_table(self):
         """
@@ -89,30 +94,46 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
         :return: None
         """
         if "ctrl" in self.toolset_hotkey:
-            self.ui_checkBox_ctrl_hotkey.setChecked(True)
+            self.ui.checkBox_ctrl_hotkey.setChecked(True)
         if "shift" in self.toolset_hotkey:
-            self.ui_checkBox_shift_hotkey.setChecked(True)
+            self.ui.checkBox_shift_hotkey.setChecked(True)
         if "alt" in self.toolset_hotkey:
-            self.ui_checkBox_alt_hotkey.setChecked(True)
-        self.ui_lineEdit_hotkey.setText(self.toolset_hotkey[-1])
+            self.ui.checkBox_alt_hotkey.setChecked(True)
+        self.ui.lineEdit_hotkey.setText(self.toolset_hotkey[-1])
 
     def autofill_show_panel_if_table(self):
         """
         Fill show panel widget if toolset has show panel node
         :return: None
         """
-        if self.show_panel_node:
-            index = self.ui_comboBox_show_panel.findText(self.show_panel_node.name(), Qt.MatchFixedString)
-            self.ui_comboBox_show_panel.setCurrentIndex(index)
+        for node in self.show_panel_nodes:
+            for item in self.ui_show_panel.items():
+                if node.name() == item.text():
+                    item.setChecked(True)
+
+    def autofill_context_sensitive_if_table(self):
+        for item in self.ui_context_sensitive.items():  # uncheck all
+            item.setChecked(False)
+
+        for node in self.context_sensitive_nodes:
+            for item in self.ui_context_sensitive.items():
+                if node.name() == item.text():
+                    item.setChecked(True)
+
+    def autofill_knob_default_if_table(self):
+        for node in self.knob_default_nodes:
+            for item in self.ui_knob_default.items():
+                if node.name() == item.text():
+                    item.setChecked(True)
 
     # CONNECTS
 
     def disconnect_autofill_if_table(self):
-        self.ui_comboBox_input_node.currentIndexChanged.disconnect()
+        self.ui.comboBox_input_node.currentIndexChanged.disconnect()
 
     def make_connects_for_main_buttons_if_table(self):
-        self.ui_pushButton_create.clicked.disconnect()
-        self.ui_pushButton_create.clicked.connect(self.start_save_settings)
+        self.ui.pushButton_create.clicked.disconnect()
+        self.ui.pushButton_create.clicked.connect(self.start_save_settings)
 
     # SAVE SETTINGS
 
@@ -123,11 +144,11 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
         """
         if self.check_before_start_save_settings_if_table():
             toolsetsHelper.delete_toolset_by_name(self.toolset_name)
-            self.set_input_output_show_panel_info_to_nodes()
+            self.set_extra_knobs_to_nodes()
             self.create_toolset()
             self.write_config_about_toolset()
-            hotkeysHelper.add_hotkey_to_menu_by_toolset_name(self.ui_lineEdit_name.text())
-            self.hotkey_edit_widget.fill_table()
+            hotkeysHelper.add_hotkey_to_menu_by_toolset_name(self.ui.lineEdit_name.text())
+            self.hotkey_edit_widget_menu.fill_table()
             self.close()
             nuke.message(settings.finish_message)
 
@@ -143,9 +164,9 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
                                 return True
 
     def check_preset_with_same_name_exists_if_table(self):
-        if not self.toolset_name == self.ui_lineEdit_name.text():
-            if (self.ui_lineEdit_name.text() + ".nk") in os.listdir(osHelper.get_toolset_path()):
-                nuke.message("Preset with name " + self.ui_lineEdit_name.text() + " already exists!")
+        if not self.toolset_name == self.ui.lineEdit_name.text():
+            if (self.ui.lineEdit_name.text() + ".nk") in os.listdir(osHelper.get_toolset_path()):
+                nuke.message("Preset with name " + self.ui.lineEdit_name.text() + " already exists!")
                 return True
         return False
 
@@ -166,7 +187,7 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
 
     def closeEvent(self, event):
         self.delete_toolset_nodes()
-        self.hotkey_edit_widget.setEnabled(True)
+        self.hotkey_edit_widget_menu.setEnabled(True)
 
     def delete_toolset_nodes(self):
         for toolset_node in self.selected:

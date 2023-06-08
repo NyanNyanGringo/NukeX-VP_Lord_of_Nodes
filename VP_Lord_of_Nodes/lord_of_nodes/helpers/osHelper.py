@@ -37,5 +37,9 @@ def get_icon_path():
     return os.path.join(get_application_path(), "icons").replace("\\", "/")
 
 
+def get_nuke_preset_path():
+    return os.path.join(nukescripts.nodepresets.getNukeUserFolder(), "NodePresets").replace("\\", "/")
+
+
 def get_nuke_preset_filepath():
-    return os.path.join(nukescripts.nodepresets.getNukeUserFolder(), "NodePresets", "user_presets.py").replace("\\", "/")
+    return os.path.join(get_nuke_preset_path(), "user_presets.py").replace("\\", "/")

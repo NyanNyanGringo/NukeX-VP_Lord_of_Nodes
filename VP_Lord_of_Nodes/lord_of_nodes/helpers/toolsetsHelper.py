@@ -1,8 +1,9 @@
 import os
 import nuke
 
-from lord_of_nodes.helpers import osHelper, configHelper
 import lord_of_nodes.hotkey_manager_settings as settings
+
+from lord_of_nodes.helpers import osHelper, configHelper
 
 
 def get_list_of_toolsets():
