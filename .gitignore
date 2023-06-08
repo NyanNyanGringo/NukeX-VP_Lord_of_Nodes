@@ -4,5 +4,4 @@ README.html
 config
 test
 .gitignore
-lord_of_nodes.widgets.saves
-lord_of_nodes.icons.material
+/VP_Lord_of_Nodes/lord_of_nodes/icons/material/
