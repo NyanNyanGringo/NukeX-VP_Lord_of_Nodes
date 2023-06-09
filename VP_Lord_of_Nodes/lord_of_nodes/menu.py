@@ -29,9 +29,9 @@ remove_knobs = menu.addCommand(settings.remove_knob_default_menu_name, knob_defa
 
 # Set icons
 create.setIcon(os.path.join(osHelper.get_icon_path(), "gandalf_icon.png"))
-edit.setIcon(os.path.join(osHelper.get_icon_path(), "legalas_icon.png"))
-set_knobs.setIcon(os.path.join(osHelper.get_icon_path(), "golumn_icon.png"))
-remove_knobs.setIcon(os.path.join(osHelper.get_icon_path(), "golumn_dead_icon.png"))
+edit.setIcon(os.path.join(osHelper.get_icon_path(), "pipe_icon.png"))
+set_knobs.setIcon(os.path.join(osHelper.get_icon_path(), "legalas_icon.png"))
+remove_knobs.setIcon(os.path.join(osHelper.get_icon_path(), "bow_icon.png"))
 
 
 # Create config if it is not exists
@@ -72,4 +72,4 @@ from lord_of_nodes.app_updater import updateHelper
 menu.addSeparator()
 action = updateHelper.add_update_action_to_menu(menu)  # to update by clicking action
 updateHelper.start_updating_application_when_initiazile(action)  # to ckeck update when initialize
-action.setIcon(QIcon(os.path.join(osHelper.get_icon_path(), "ring_icon.png")))
+# action.setIcon(QIcon(os.path.join(osHelper.get_icon_path(), "загруженное.jpeg")))
