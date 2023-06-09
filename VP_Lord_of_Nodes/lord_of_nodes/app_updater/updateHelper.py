@@ -393,7 +393,11 @@ def start_updating_application_when_trigger():
                     return
 
             # unzip
-            unzip_path = unzip(zip_path, delete_zip=True)
+            try:
+                unzip_path = unzip(zip_path, delete_zip=True)
+            except:
+                ask_error_message("can't unzip last release file from GitHub. Please, try again.")
+                return
 
             # get paths
             new_program_path = os.path.join(unzip_path, get_plugin_path_name(), get_application_name()).replace("\\", "/")
