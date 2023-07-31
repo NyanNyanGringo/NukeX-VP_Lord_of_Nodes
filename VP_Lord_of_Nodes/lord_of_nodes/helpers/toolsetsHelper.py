@@ -13,7 +13,17 @@ def get_list_of_toolsets():
     """
     list_of_toolsets = []
     for file in os.listdir(osHelper.get_toolset_path()):
-        list_of_toolsets.append(file.replace(".nk", ""))
+
+        if ".nk" not in file:
+            continue
+
+        toolset_name = file.replace(".nk", "")
+        if configHelper.check_key(toolset_name):
+            list_of_toolsets.append(toolset_name)
+        else:
+            print(f"My Lord, can't find config key for {os.path.join(osHelper.get_toolset_path(), file)}!"
+                  f" Please, delete this file.")
+
     return list_of_toolsets
 
 
