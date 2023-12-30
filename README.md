@@ -31,3 +31,10 @@ Create any Hotkeys bundles of nodes you want with any knobs you want!
 ## HOW TO UPDATE (MANUALLY):
 1) Delete folder "lord_of_nodes" ("/.nuke/VP_Lord_of_Nodes/lord_of_nodes")
 2) Move !new! "lord_of_nodes" folder to "/.nuke/VP_Lord_of_Nodes/lord_of_nodes"
+
+
+## SETTINGS:
+- To set up custom config path use env variable LORD_OF_NODES_CONFIG_PATH:
+> import os  
+> os.environ["LORD_OF_NODES_CONFIG_PATH"] = "/your/custom/path"
+> 

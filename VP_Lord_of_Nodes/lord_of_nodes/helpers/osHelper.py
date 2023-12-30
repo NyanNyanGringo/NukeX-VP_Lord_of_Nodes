@@ -2,6 +2,9 @@ import os
 import nukescripts
 
 
+LORD_OF_NODES_CONFIG_PATH = os.getenv("LORD_OF_NODES_CONFIG_PATH")
+
+
 def get_plugin_path():
     """
     Return application path (Windows Example): "C:/Users/user/.nuke/Python/VP_Lord_of_nodes"
@@ -19,6 +22,8 @@ def get_application_path():
 
 
 def get_config_path():
+    if LORD_OF_NODES_CONFIG_PATH:
+        return LORD_OF_NODES_CONFIG_PATH
     return os.path.join(get_plugin_path(), "config").replace("\\", "/")
 
 

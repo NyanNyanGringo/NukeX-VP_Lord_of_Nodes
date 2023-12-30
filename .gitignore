@@ -5,3 +5,4 @@ config
 test
 .gitignore
 /VP_Lord_of_Nodes/lord_of_nodes/icons/material/
+Context-Sensitive-Nodes.nk

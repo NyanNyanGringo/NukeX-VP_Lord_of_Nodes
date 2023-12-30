@@ -27,11 +27,6 @@ How to build app to make app_updater work:
 
 """
 
-
-# DEVELOPER
-use_test_mode = False
-
-
 # EDIT
 github_username = "NyanNyanGringo"
 github_repository = "NukeX-VP_Lord_of_Nodes"
