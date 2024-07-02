@@ -93,12 +93,9 @@ class HotkeyEditWidget(hotkey_creator.HotkeyCreatorWidget):
         Fill hotkey widgets with toolset hotkey
         :return: None
         """
-        if "ctrl" in self.toolset_hotkey:
-            self.ui.checkBox_ctrl_hotkey.setChecked(True)
-        if "shift" in self.toolset_hotkey:
-            self.ui.checkBox_shift_hotkey.setChecked(True)
-        if "alt" in self.toolset_hotkey:
-            self.ui.checkBox_alt_hotkey.setChecked(True)
+        self.ui.checkBox_ctrl_hotkey.setChecked("ctrl" in self.toolset_hotkey)#EDITED
+        self.ui.checkBox_shift_hotkey.setChecked("shift" in self.toolset_hotkey)#EDITED
+        self.ui.checkBox_alt_hotkey.setChecked("alt" in self.toolset_hotkey)#EDITED
         self.ui.lineEdit_hotkey.setText(self.toolset_hotkey[-1])
 
     def autofill_show_panel_if_table(self):

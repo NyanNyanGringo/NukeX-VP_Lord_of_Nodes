@@ -1,6 +1,7 @@
 import nuke
 import os
 import re
+import string  # EDITED
 
 from PySide2.QtWidgets import QWidget, QSpacerItem, QSizePolicy, QCompleter
 from PySide2.QtCore import QSize
@@ -35,7 +36,7 @@ class HotkeyCreatorWidget(QWidget):
         # SETUP UI
         self.ui = creatorWidget.Ui_creatorWidget()
         self.ui.setupUi(self)
-        
+
         self.add_custom_widgets()
         self.add_tooltips()
         self.setParent(self.parent)
@@ -99,7 +100,7 @@ class HotkeyCreatorWidget(QWidget):
             "branch - 'center' knob takes as value width/height of input nodes.\n\n"
             "In this version of program next context-sensitive nodes supported:\n"
             "" + stringHelper.auto_enter(" ".join(hotkeysHelper.get_supported_context_sensitive_knobs()))
-            )
+        )
 
         self.ui_knob_default.setToolTip(
             stringHelper.auto_enter("Hotkeys works in ToolSet engine - it means every time you trigger Hotkey, "
@@ -119,6 +120,8 @@ class HotkeyCreatorWidget(QWidget):
         self.autofill_name()
         self.autofill_show_panel()
         self.autofill_names()
+        self.autofill_hotkeys_hint()  # EDITED
+        self.autofill_hotkeys()  # при открытии будет сразу предлагать новый хоткей
         self.autofill_context_sensitive()
         self.autofill_knob_default()
 
@@ -126,6 +129,7 @@ class HotkeyCreatorWidget(QWidget):
 
         self.ui.lineEdit_hotkey.setMaximumWidth(24)
         self.ui.comboBox_names.setMaximumWidth(24)
+        self.ui.comboBox_hotkeys_hint.setMaximumWidth(24)  # EDITED
         self.ui.lineEdit_hotkey.setAlignment(Qt.AlignCenter)
 
     def setup_completer(self):
@@ -151,6 +155,7 @@ class HotkeyCreatorWidget(QWidget):
         self.ui.comboBox_names.currentIndexChanged.connect(
             lambda: self.ui.lineEdit_name.setText(self.ui.comboBox_names.currentText())
         )
+        self.ui.comboBox_hotkeys_hint.currentIndexChanged.connect(self.autofill_hotkeys)  # EDITED
 
     def make_connects_for_autofix(self):
         """
@@ -223,6 +228,59 @@ class HotkeyCreatorWidget(QWidget):
         """
         self.ui.comboBox_names.addItem("")
         self.ui.comboBox_names.addItems(toolsetsHelper.get_list_of_toolsets())
+
+    def autofill_hotkeys(self):  # EDITED
+        hotkey = self.ui.comboBox_hotkeys_hint.currentText()
+        self.ui.checkBox_ctrl_hotkey.setChecked('ctrl' in hotkey)
+        self.ui.checkBox_shift_hotkey.setChecked('shift' in hotkey)
+        self.ui.checkBox_alt_hotkey.setChecked('alt' in hotkey)
+        self.ui.lineEdit_hotkey.setText(hotkey[-1])
+
+    def autofill_hotkeys_hint(self):  # EDITED
+        hotkey_prefix_order = ['', 'ctrl', 'alt', 'shift', 'ctrl+shift', 'ctrl+alt', 'alt+shift', 'ctrl+alt+shift']
+
+        # возвращает все доступные в нюке хоткеи, логика взята из ask_if_global_hotkey_already_exists
+        def get_all_global_hotkeys():
+            all_hotkeys_list = []
+            for menu in ("Nodes", "Nuke", "Viewer", "Node Graph"):
+                menu = nuke.menu(menu)
+                menu_items = qtHelper.get_items_in_menu(menu)
+                for menu_item in menu_items:
+                    hotkey = menu_item.action().shortcut().toString().replace(" ", "").lower()
+                    if hotkey != '':
+                        all_hotkeys_list.append(hotkey)
+            return all_hotkeys_list
+
+        # возвращает список из первых букв имен выбранных нод, нужно чтобы первыми выводить шорткаты содержащие первые буквы выбранных нод
+        def get_first_letters_list(nodes):
+            letters = []
+            for node in nodes:
+                if node.name():
+                    letter = node.name()[0].lower()
+                    if letter.isalpha() and letter not in letters:
+                        letters.append(letter)
+            return letters
+
+        available_hotkeys_list = []  # запишем сюда доступные хоткеи
+        reserved_hotkeys = get_all_global_hotkeys() + toolsetsHelper.get_toolsets_hotkeys_list()  # создаем список из уже занятых хоткеев нюком и lord of nodes
+        first_letters_list = get_first_letters_list(
+            self.selected)  # попытаемся составить хоткей из первых букв выбранных нод
+        all_letters = list(string.ascii_lowercase)  # все буквы английского алфавита
+        for letter in first_letters_list:  # удаляем буквы first_letters_list из all_letters, чтоюы поставить их в начало списка
+            all_letters.remove(
+                letter)  # get_first_letters_list обеспечивает, что элементы не повторяются и что они буквы и есть в all_letters
+        for prefix in hotkey_prefix_order:  # сначала составляем список для первых букв выбранных нод
+            for letter in first_letters_list:
+                hotkey = f'{prefix}+{letter}'.lstrip('+')
+                if hotkey not in reserved_hotkeys:
+                    available_hotkeys_list.append(hotkey)
+        for prefix in hotkey_prefix_order:  # потом составляем список для остальных букв
+            for letter in all_letters:
+                hotkey = f'{prefix}+{letter}'.lstrip('+')
+                if hotkey not in reserved_hotkeys:
+                    available_hotkeys_list.append(hotkey)
+        if available_hotkeys_list:
+            self.ui.comboBox_hotkeys_hint.addItems(available_hotkeys_list)
 
     def autofill_show_panel(self):
         """

@@ -1,7 +1,7 @@
 import nuke
 import os
 
-from lord_of_nodes.helpers import toolsetsHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, qtHelper,\
+from lord_of_nodes.helpers import toolsetsHelper, nukeHelper, hotkeysHelper, osHelper, configHelper, qtHelper, \
     autobackdrop
 import lord_of_nodes.hotkey_manager_settings as settings
 
@@ -93,7 +93,7 @@ class HotkeyEditNodeGraphWidget(hotkey_creator.HotkeyCreatorWidget):
 
         save_node = self.emitter_node
         delete_node = \
-        [node for node in nuke.allNodes() if node.name() == last_preset_name + settings.delete_node_subname][0]
+            [node for node in nuke.allNodes() if node.name() == last_preset_name + settings.delete_node_subname][0]
         backdrop = [node for node in nuke.allNodes() if node.name() == last_preset_name + settings.backdrop_subname][0]
 
         # Change BackDrop
@@ -308,22 +308,22 @@ except:
 try:
     from lord_of_nodes import hotkey_edit_node_graph
     from lord_of_nodes.helpers import qtHelper
-    
+
     this_node = nuke.thisNode()
     this_knob = nuke.thisKnob()
-    
+
     if this_knob.name() == "selected":
         # Get backdrop
         backdrop = nuke.toNode('_'.join(this_node.name().split("_")[0:-1]) + '""" + settings.backdrop_subname + """')
         toolset_nodes = backdrop.getNodes()
-        
+
         if not toolset_nodes:
             nuke.message("Inside backdrop should be at least one node!")
             [node.setSelected(False) for node in nuke.allNodes()]
         else:
             [node.setSelected(False) for node in nuke.allNodes()]
             [node.setSelected(True) for node in toolset_nodes]
-            
+
             if not qtHelper.check_hotkey_manager_creator_is_opened():
                 nuke_main_window = qtHelper.get_nuke_main_window()
                 nuke_main_window.setEnabled(False)
@@ -337,10 +337,10 @@ except:
             """
 try:
     from lord_of_nodes.helpers import toolsetsHelper, qtHelper
-    
+
     this_node = nuke.thisNode()
     this_knob = nuke.thisKnob()
-    
+
     if this_knob.name() == "selected" and this_node.isSelected():
         if nuke.ask("Are you sure you want to delete preset?"):
             toolset_name = '_'.join(this_node.name().split("_")[0:-1])
@@ -349,14 +349,14 @@ try:
             save_node = nuke.toNode(toolset_name + '""" + settings.save_node_subname + """')
             delete_node = nuke.toNode(toolset_name + '""" + settings.delete_node_subname + """')
             toolset_nodes = backdrop.getNodes()
-            
+
             for node in toolset_nodes + [backdrop, save_node, delete_node]:
                 node.unlock()
             delete_node["knobChanged"].setValue("")  # clear knobChanged to not 
                                                      # cause errors after deleting delete_node
             for node in toolset_nodes + [backdrop, save_node, delete_node]:
                 nuke.delete(node)
-                
+
             if not toolsetsHelper.get_list_of_toolsets():
                 edit_node_graph_action = qtHelper.find_edit_node_graph_action()
                 edit_node_graph_action.setChecked(False)

@@ -108,6 +108,11 @@ class Ui_creatorWidget(object):
 
         self.horizontalLayout_2.addWidget(self.lineEdit_hotkey)
 
+        self.comboBox_hotkeys_hint = QComboBox(self.tab_setup)#EDITED
+        self.comboBox_hotkeys_hint.setObjectName(u"comboBox_hotkeys_hint")#EDITED
+        self.comboBox_hotkeys_hint.setEditable(False)#EDITED
+
+        self.horizontalLayout_2.addWidget(self.comboBox_hotkeys_hint)#EDITED
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
