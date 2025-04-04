@@ -24,7 +24,7 @@ def get_node_graph_widget():
     import hiero.ui
     for widget in hiero.ui.windowManager().windows():
         if widget.windowTitle() == "Node Graph":
-            if widget.metaObject().className() == "Foundry::UI::LinkedView":
+            if widget.metaObject().className() in ["Foundry::UI::LinkedView", "DAGNukeWindow"]:
                 return widget
     raise Exception("Can't find nodegraph!")
 
