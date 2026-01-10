@@ -3,7 +3,7 @@
 [YouTube](https://www.youtube.com/watch?v=h2O-PNnSndI)  
 [Nukepedia](http://www.nukepedia.com/python/nodegraph/hotkey-manager)
 
-![alt text](http://www.nukepedia.com/images/users/NyanNyanGringo/lord_of_nodes/lord_of_nodes_logo.jpeg)
+![alt text](https://www.nukepedia.com/assets/img/users/NyanNyanGringo/lord_of_nodes/lord_of_nodes_logo.jpeg)
 
 ### <center>Nodes control never was so easy!</center>
 
